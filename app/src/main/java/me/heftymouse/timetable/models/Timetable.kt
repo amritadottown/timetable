@@ -1,6 +1,8 @@
 package me.heftymouse.timetable.models
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonIgnoreUnknownKeys
 
 @Serializable
 data class Timetable(
@@ -20,3 +22,8 @@ data class Timetable(
         "1:25-3:40"
     )
 )
+
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable
+@JsonIgnoreUnknownKeys
+data class Subject(val name: String, val code: String, val faculty: String)

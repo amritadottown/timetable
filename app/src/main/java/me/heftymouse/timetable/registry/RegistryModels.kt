@@ -1,3 +1,3 @@
-package me.heftymouse.timetable.models
+package me.heftymouse.timetable.registry
 
 data class Registry(val version: Int, val timetables: Array<String>);

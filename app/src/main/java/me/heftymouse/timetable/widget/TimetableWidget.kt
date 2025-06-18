@@ -16,7 +16,6 @@ import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.components.Scaffold
-import androidx.glance.appwidget.components.TitleBar
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.lazy.LazyColumn
 import androidx.glance.appwidget.lazy.items
@@ -40,14 +39,16 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
 import me.heftymouse.timetable.R
 import me.heftymouse.timetable.activity.DateSwitcherActivity
 import me.heftymouse.timetable.models.Subject
 import me.heftymouse.timetable.models.Timetable
 import me.heftymouse.timetable.models.dayKey
 import me.heftymouse.timetable.models.fileKey
-import me.heftymouse.timetable.models.lockedKey
+import me.heftymouse.timetable.models.lockedUntilKey
 import me.heftymouse.timetable.models.widgetConfig
 import java.time.Instant
 import java.time.LocalDate
@@ -62,6 +63,7 @@ class TimetableWidgetReceiver : GlanceAppWidgetReceiver() {
 }
 
 class TimetableWidget : GlanceAppWidget() {
+    @OptIn(ExperimentalSerializationApi::class)
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         coroutineScope {
             val store = context.widgetConfig
@@ -74,13 +76,11 @@ class TimetableWidget : GlanceAppWidget() {
 
             provideContent {
                 val textStyle = TextStyle(color = GlanceTheme.colors.onSurface)
-                val strongTextStyle =
-                    TextStyle(color = GlanceTheme.colors.onSurface, fontWeight = FontWeight.Medium)
 
                 val data by store.data.collectAsState(initial)
                 val day = data[dayKey] ?: LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE"))
-                val file = String(context.openFileInput(data[fileKey]).readBytes())
-                val timetable = Json.decodeFromString<Timetable>(file)
+                val file = context.openFileInput(data[fileKey])
+                val timetable = Json.decodeFromStream<Timetable>(file)
 
                 val times: MutableList<TimetableDisplayEntry> = mutableListOf()
                 if (timetable.schedule.containsKey(day)) {
@@ -115,7 +115,7 @@ class TimetableWidget : GlanceAppWidget() {
                 }
 
                 val isLockedNow =
-                    with(data[lockedKey]) {
+                    with(data[lockedUntilKey]) {
                         if(this != null)
                             Instant.ofEpochSecond(this).isAfter(Instant.now())
                         else false
@@ -221,9 +221,9 @@ fun TimetableItem(item: TimetableDisplayEntry) {
         ) {
             Column {
                 Row(verticalAlignment = Alignment.Vertical.CenterVertically) {
-                    Text(item.name, style = strongTextStyle)
+                    Text(name, style = strongTextStyle)
                     Spacer(GlanceModifier.padding(start = 4.dp))
-                    if (item.lab) {
+                    if (lab) {
                         Image(provider = ImageProvider(R.drawable.science_24px), contentDescription = "Lab", colorFilter = ColorFilter.tint(GlanceTheme.colors.primary))
                     }
                 }

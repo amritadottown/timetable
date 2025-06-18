@@ -30,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import me.heftymouse.timetable.ui.TimetableTheme
 import me.heftymouse.timetable.utils.updateTimetableFromUri
 
 class TimetableShareActivity : ComponentActivity() {

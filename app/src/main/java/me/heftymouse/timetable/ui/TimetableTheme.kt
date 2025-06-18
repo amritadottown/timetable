@@ -1,4 +1,4 @@
-package me.heftymouse.timetable.activity
+package me.heftymouse.timetable.ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
