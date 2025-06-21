@@ -1,6 +1,5 @@
 [versions]
-agp = "8.7.3"
-glanceAppwidget = "1.1.1"
+agp = "8.10.1"
 kotlin = "2.0.0"
 coreKtx = "1.16.0"
 junit = "4.13.2"
@@ -8,14 +7,16 @@ junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.9.1"
 activityCompose = "1.10.1"
-composeBom = "2025.06.00"
-workRuntimeKtx = "2.10.1"
-navigation = "2.9.0"
+composeBom = "2025.06.01"
+workRuntimeKtx = "2.10.2"
+
+kotlinx-serialization = "1.8.1"
+glance = "1.1.1"
+nav3Core = "1.0.0-alpha04"
+retrofit = "3.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-androidx-glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = "glanceAppwidget" }
-androidx-glance-material3 = { module = "androidx.glance:glance-material3", version.ref = "glanceAppwidget" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -29,10 +30,16 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
-androidx-navigation = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
-kotlinx-serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.8.0"}
+
+androidx-glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = "glance" }
+androidx-glance-material3 = { module = "androidx.glance:glance-material3", version.ref = "glance" }
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workRuntimeKtx" }
-retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version = "3.0.0" }
+
+androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "nav3Core" }
+androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "nav3Core" }
+
+kotlinx-serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization"}
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

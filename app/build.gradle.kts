@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "me.heftymouse.timetable"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "me.heftymouse.timetable"
         minSdk = 31
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -29,18 +29,15 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
         viewBinding = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
     }
 }
 
@@ -62,9 +59,13 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    implementation(libs.androidx.navigation)
+
     implementation(libs.androidx.glance.appwidget)
     implementation(libs.androidx.glance.material3)
+
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+
     implementation(libs.kotlinx.serialization)
     implementation(libs.retrofit)
 }

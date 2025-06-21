@@ -2,7 +2,6 @@ package me.heftymouse.timetable.activity
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -31,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import me.heftymouse.timetable.ui.TimetableTheme
-import me.heftymouse.timetable.utils.updateTimetableFromUri
 
 class TimetableShareActivity : ComponentActivity() {
     @SuppressLint("NewApi")
@@ -70,10 +68,10 @@ class TimetableShareActivity : ComponentActivity() {
                         Text(intent.getStringExtra(Intent.EXTRA_TEXT) ?: "⚠️ Unknown name")
                         Button(onClick = {
                             scope.launch {
-                                intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)?.run {
-                                    updateTimetableFromUri(this)
-                                    showSecondaryText = true
-                                }
+//                                intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)?.run {
+//                                    updateTimetableFromUri(this)
+//                                    showSecondaryText = true
+//                                }
                             }
                         }) {
                             Text("Use Timetable")
