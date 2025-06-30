@@ -1,0 +1,53 @@
+{
+  "subjects": {
+    "A": {
+      "name": "Theory of Computation",
+      "code": "23CSE303",
+      "faculty": "Dr. Gurupriya M",
+      "shortName": "TOC"
+    },
+    "B": {
+      "name": "Embedded Systems",
+      "code": "23CSE304",
+      "faculty": "Dr. Meena Belwal (Co- Ms. Kavitha C R)",
+      "shortName": "ES"
+    },
+    "C": {
+      "name": "Neural Networks and Deep Learning",
+      "code": "23CSE473",
+      "faculty": "Ms Saranya Devi (Ms. Niharika Panda)",
+      "shortName": "NNDL"
+    },
+    "D": {
+      "name": "Computer Networks",
+      "code": "23CSE302",
+      "faculty": "Dr. Thangam S (Co-Dr. Shinu M R)",
+      "shortName": "CN"
+    },
+    "E": {
+      "name": "Machine Learning",
+      "code": "23CSE301",
+      "faculty": "Dr. Peeta Basa Pati (Co-Dr. Debanjali B)",
+      "shortName": "ML"
+    },
+    "PE2": {
+      "name": "NLP/Robotics",
+      "code": "23CSE471 / 23CSE472",
+      "faculty": "Dr. Manju Venugopal, Dr Nandu C Nair / Dr. Nidhin Prabhakar (Co-Dr. Kiran Pandiri, Dr. Nippun Kumar)",
+      "shortName": "ELEC"
+    },
+    "CIR": {
+      "name": "Life Skills for Engineers III",
+      "code": "23LSE301",
+      "faculty": "Karishma Nair, Jisha Nair",
+      "shortName": "CIR"
+    }
+  },
+  "schedule": {
+    "Monday": ["D", "PE II", "B", "E", "A", "C_LAB"],
+    "Tuesday": ["PE2_LAB", "D", "C", "E_LAB"],
+    "Wednesday": ["C", "B", "B", "E", "CIR", "A", "D"],
+    "Thursday": ["PE2", "CIR", "CIR", "CIR", "C", "A_LAB"],
+    "Friday": ["D", "PE2", "A", "B_LAB", "C", "E"]
+  }
+}
