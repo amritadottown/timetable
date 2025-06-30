@@ -24,13 +24,13 @@ import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 
-data object Home
-data object Registry
+data object HomeRoute
+data object RegistryRoute
 
 @Composable
 fun RootScreen() {
   TimetableTheme {
-    val backStack = remember { mutableStateListOf<Any>(Home) }
+    val backStack = remember { mutableStateListOf<Any>(HomeRoute) }
     val context = LocalContext.current
     val thingy =
       PathInterpolator(PathParser.createPathFromPathData("M 0,0 C 0.05, 0, 0.133333, 0.06, 0.166666, 0.4 C 0.208333, 0.82, 0.25, 1, 1, 1"))
@@ -42,12 +42,12 @@ fun RootScreen() {
       backStack = backStack,
       onBack = { backStack.removeLastOrNull() },
       entryProvider = entryProvider {
-        entry<Home> {
+        entry<HomeRoute> {
           HomeScreen(openRegistryPage = {
-            backStack.add(Registry)
+            backStack.add(RegistryRoute)
           })
         }
-        entry<Registry> { RegistryScreen(goBack = { if (backStack.count() > 1) backStack.removeLastOrNull() }) }
+        entry<RegistryRoute> { RegistryScreen(goBack = { if (backStack.count() > 1) backStack.removeLastOrNull() }) }
         entry<Unit> { Text("how?") }
       },
       transitionSpec = {

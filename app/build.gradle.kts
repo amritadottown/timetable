@@ -68,4 +68,6 @@ dependencies {
 
     implementation(libs.kotlinx.serialization)
     implementation(libs.retrofit)
+    implementation(libs.retrofit.kotlinx.serialization)
+    implementation(libs.okhttp.logging)
 }
