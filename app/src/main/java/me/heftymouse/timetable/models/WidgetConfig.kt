@@ -5,7 +5,7 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.glance.appwidget.updateAll
-import me.heftymouse.timetable.widget.TimetableWidget
+import me.heftymouse.timetable.widget.TimetableAppWidget
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
@@ -21,7 +21,7 @@ suspend fun Context.updateDay(day: String) {
         it.toMutablePreferences().apply { this[dayKey] = day }
     }
 
-    TimetableWidget().updateAll(this)
+    TimetableAppWidget().updateAll(this)
 }
 
 suspend fun Context.updateFile(file: String) {
@@ -29,7 +29,7 @@ suspend fun Context.updateFile(file: String) {
         it.toMutablePreferences().apply { this[fileKey] = file }
     }
 
-    TimetableWidget().updateAll(this)
+    TimetableAppWidget().updateAll(this)
 }
 
 suspend fun Context.updateLock(isLocked: Boolean) {
@@ -45,5 +45,5 @@ suspend fun Context.updateLock(isLocked: Boolean) {
         }
     }
 
-    TimetableWidget().updateAll(this)
+    TimetableAppWidget().updateAll(this)
 }

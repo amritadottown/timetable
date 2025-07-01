@@ -10,7 +10,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.glance.appwidget.updateAll
 import kotlinx.coroutines.flow.first
-import me.heftymouse.timetable.widget.TimetableWidget
+import me.heftymouse.timetable.widget.TimetableAppWidget
 import me.heftymouse.timetable.models.fileKey
 import me.heftymouse.timetable.models.widgetConfig
 import java.io.FileInputStream
@@ -34,7 +34,7 @@ suspend fun Context.updateTimetableFromUri(uri: Uri) {
                     }
                 }
                 Log.d("Timetable", widgetConfig.data.first()[fileKey] ?: "not found")
-                TimetableWidget().updateAll(this)
+                TimetableAppWidget().updateAll(this)
             }
         }
     }

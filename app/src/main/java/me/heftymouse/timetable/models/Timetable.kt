@@ -9,20 +9,20 @@ data class Timetable(
   val subjects: HashMap<String, Subject>,
   val schedule: HashMap<String, Array<String>>
 ) {
-    val slots: Array<String> = arrayOf(
-        "8:10-9:00",
-        "9:00-9:50",
-        "9:50-10:40",
-        "11:00-11:50",
-        "11:50-12:40",
-        "2:00-2:50",
-        "2:50-3:40"
-    )
-    val labSlots: Array<String> = arrayOf(
-        "8:10-10:25",
-        "10:50-1:05",
-        "1:25-3:40"
-    )
+  val slots: Array<String> = arrayOf(
+    "8:10-9:00",
+    "9:00-9:50",
+    "9:50-10:40",
+    "11:00-11:50",
+    "11:50-12:40",
+    "2:00-2:50",
+    "2:50-3:40"
+  )
+  val labSlots: Array<String> = arrayOf(
+    "8:10-10:25",
+    "10:50-1:05",
+    "1:25-3:40"
+  )
 }
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -32,5 +32,59 @@ data class Subject(
   val name: String,
   val code: String,
   val faculty: String,
-  val shortName: String = name.split(" ").map({ e -> e[0] }).joinToString(separator = "")
+  val shortName: String = name.split(" ").map({ e -> e[0] }).filter({ e -> e.isUpperCase() }).joinToString(separator = "")
 )
+
+data class TimetableDisplayEntry(
+  val name: String,
+  val shortName: String,
+  val slot: String,
+  val start: Int,
+  val end: Int,
+  val lab: Boolean
+)
+
+fun buildTimetableDisplay(day: String, timetable: Timetable): List<TimetableDisplayEntry> {
+  if (!timetable.schedule.containsKey(day))
+    return emptyList()
+
+  val times: MutableList<TimetableDisplayEntry> = mutableListOf()
+  var i = 0
+  timetable.schedule[day]?.forEach { x ->
+    val subject = when (x) {
+      "FREE" -> Subject("Free", "", "")
+      else -> timetable.subjects[x.removeSuffix("_LAB")]!!
+    }
+
+    val offset = if (x.endsWith("_LAB"))
+      when (i) {
+        0 -> 3
+        else -> 2
+      }
+    else 1
+
+    val slot = if (x.endsWith("_LAB"))
+      when (i) {
+        0 -> timetable.labSlots[0]
+        3 -> timetable.labSlots[1]
+        5 -> timetable.labSlots[2]
+        else -> "⚠️ UNKNOWN"
+      }
+    else timetable.slots[i]
+
+    times.add(
+      TimetableDisplayEntry(
+        subject.name,
+        subject.shortName,
+        slot,
+        i,
+        i + offset - 1,
+        x.endsWith("_LAB")
+      )
+    )
+
+    i += offset
+  }
+
+  return times
+}
