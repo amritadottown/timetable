@@ -1,7 +1,16 @@
 {
     "version": 1,
-    "timetables": [
-        "2027/s4/cse/a",
-        "2027/s4/aid/f"
-    ]
+    "timetables": {
+        "btech": {
+            "2027": {
+                "s4": [
+                    "cse-a",
+                    "aid-f"
+                ],
+                "s5": [
+                    "cse-a"
+                ]
+            }
+        }
+    }
 }

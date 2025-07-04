@@ -7,14 +7,20 @@ import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Path
 
 
 interface RegistryService {
   @GET("index.json")
   fun getRegistry(): Call<Registry>
 
-  @GET("files/{id}/timetable.json")
-  fun getTimetable(): Call<Timetable>
+  @GET("files/{program}/{year}/{sem}/{class}.json")
+  fun getTimetable(
+    @Path("program") program: String,
+    @Path("year") year: String,
+    @Path("sem") sem: String,
+    @Path("class") classroom: String
+  ): Call<Timetable>
 
   companion object {
     val instance: RegistryService by lazy {

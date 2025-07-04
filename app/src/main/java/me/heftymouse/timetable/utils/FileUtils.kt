@@ -12,11 +12,11 @@ import androidx.glance.appwidget.updateAll
 import kotlinx.coroutines.flow.first
 import me.heftymouse.timetable.widget.TimetableAppWidget
 import me.heftymouse.timetable.models.fileKey
+import me.heftymouse.timetable.models.updateFile
 import me.heftymouse.timetable.models.widgetConfig
 import java.io.FileInputStream
 
 @SuppressLint("Range")
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 suspend fun Context.updateTimetableFromUri(uri: Uri) {
     contentResolver.query(uri, null, null, null, null)?.use { cursor ->
         if (cursor.moveToFirst()) {
@@ -24,17 +24,15 @@ suspend fun Context.updateTimetableFromUri(uri: Uri) {
                 cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
             Log.d("Timetable", displayName)
             contentResolver.openFileDescriptor(uri, "r").use { fd ->
-                val data = FileInputStream(fd?.fileDescriptor).readAllBytes()
-                openFileOutput(displayName, MODE_PRIVATE).use { outputStream ->
-                    outputStream.write(data)
-                }
-                widgetConfig.updateData {
-                    it.toMutablePreferences().apply {
-                        this[fileKey] = displayName
+                val inputChannel = FileInputStream(fd?.fileDescriptor).channel
+                val outputChannel = openFileOutput(displayName, MODE_PRIVATE).channel
+
+                inputChannel.use { input ->
+                    outputChannel.use { output ->
+                        output.transferFrom(input, 0, input.size())
                     }
                 }
-                Log.d("Timetable", widgetConfig.data.first()[fileKey] ?: "not found")
-                TimetableAppWidget().updateAll(this)
+                this.updateFile(displayName)
             }
         }
     }

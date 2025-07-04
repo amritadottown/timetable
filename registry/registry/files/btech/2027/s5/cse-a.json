@@ -41,13 +41,19 @@
       "code": "23LSE301",
       "faculty": "Karishma Nair, Jisha Nair",
       "shortName": "CIR"
+    },
+    "EVS": {
+      "name": "Environmental Science",
+      "code": "23ENV300",
+      "faculty": "Dr. Bhaskar B.M.",
+      "shortName": "EVS"
     }
   },
   "schedule": {
-    "Monday": ["D", "PE II", "B", "E", "A", "C_LAB"],
-    "Tuesday": ["PE2_LAB", "D", "C", "E_LAB"],
-    "Wednesday": ["C", "B", "B", "E", "CIR", "A", "D"],
-    "Thursday": ["PE2", "CIR", "CIR", "CIR", "C", "A_LAB"],
+    "Monday": ["D", "PE2", "B", "E", "A", "C_LAB"],
+    "Tuesday": ["PE2_LAB", "EVS", "C", "E_LAB"],
+    "Wednesday": ["C", "B", "FREE", "E", "CIR", "A", "D"],
+    "Thursday": ["C", "CIR", "CIR", "CIR", "D", "A_LAB"],
     "Friday": ["D", "PE2", "A", "B_LAB", "C", "E"]
   }
 }
