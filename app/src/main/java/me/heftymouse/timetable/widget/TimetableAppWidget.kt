@@ -1,9 +1,12 @@
 package me.heftymouse.timetable.widget
 
 import android.content.Context
+import android.content.Intent
+import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.glance.ColorFilter
@@ -12,6 +15,7 @@ import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
 import androidx.glance.Image
 import androidx.glance.ImageProvider
+import androidx.glance.LocalContext
 import androidx.glance.LocalSize
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
@@ -61,6 +65,11 @@ import me.heftymouse.timetable.widget.Sizes.BEEG
 import me.heftymouse.timetable.widget.Sizes.SMOL
 import java.time.Instant
 import java.util.concurrent.TimeUnit
+import androidx.compose.ui.platform.LocalResources
+import androidx.glance.action.Action
+import androidx.glance.action.ActionParameters
+import androidx.glance.appwidget.action.ActionCallback
+import androidx.glance.appwidget.action.actionRunCallback
 
 
 class TimetableWidgetReceiver : GlanceAppWidgetReceiver() {
@@ -120,9 +129,9 @@ fun TimetableWidget(day: String, isLockedNow: Boolean, times: List<TimetableDisp
         TitleBar(day, isLockedNow)
       },
       backgroundColor = GlanceTheme.colors.background,
-      modifier = GlanceModifier.padding(bottom = 12.dp)
+      modifier = GlanceModifier.padding(bottom = 12.dp),
     ) {
-      Box(GlanceModifier.cornerRadius(android.R.dimen.system_app_widget_inner_radius)) {
+      Box(GlanceModifier.appWidgetInnerCornerRadius(12.dp)) {
         if (times.isEmpty()) {
           Box(
             GlanceModifier.fillMaxSize(),
@@ -149,6 +158,19 @@ fun TimetableWidget(day: String, isLockedNow: Boolean, times: List<TimetableDisp
   }
 }
 
+class Thingy : ActionCallback {
+  override suspend fun onAction(
+    context: Context,
+    glanceId: GlanceId,
+    parameters: ActionParameters
+  ) {
+    val intent = Intent(context, DateSwitcherActivity::class.java).apply {
+      flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION
+    }
+    context.startActivity(intent)
+  }
+}
+
 @Composable
 fun TitleBar(day: String, locked: Boolean) {
   val textStyle = TextStyle(color = GlanceTheme.colors.onSurface)
@@ -161,7 +183,7 @@ fun TitleBar(day: String, locked: Boolean) {
       modifier = GlanceModifier
         .fillMaxWidth()
         .padding(horizontal = 16.dp, vertical = 14.dp)
-        .clickable(actionStartActivity<DateSwitcherActivity>())
+        .clickable(actionRunCallback<Thingy>())
     ) {
       Box(
         contentAlignment = Alignment.Center,
@@ -206,7 +228,7 @@ fun TimetableItem(item: TimetableDisplayEntry) {
       GlanceModifier
         .fillMaxWidth()
         .padding(horizontal = 14.dp, vertical = 8.dp)
-        .cornerRadius(android.R.dimen.system_app_widget_inner_radius)
+        .appWidgetInnerCornerRadius(12.dp)
         .background(GlanceTheme.colors.widgetBackground)
     ) {
       Column {
@@ -238,4 +260,16 @@ fun TimetableItem(item: TimetableDisplayEntry) {
       }
     }
   }
+}
+
+@Composable
+fun GlanceModifier.appWidgetInnerCornerRadius(widgetPadding: Dp): GlanceModifier {
+  val resources = LocalContext.current.resources
+  // get dimension in float (without rounding).
+  val px = resources.getDimension(android.R.dimen.system_app_widget_background_radius)
+  val widgetBackgroundRadiusDpValue = px / resources.displayMetrics.density
+  if (widgetBackgroundRadiusDpValue < widgetPadding.value) {
+    return this
+  }
+  return this.cornerRadius(Dp(widgetBackgroundRadiusDpValue - widgetPadding.value))
 }

@@ -39,6 +39,7 @@ class TimetableShareActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     enableEdgeToEdge()
+
     setContent {
       var showSecondaryText by remember { mutableStateOf(false) }
       val scope = rememberCoroutineScope()
