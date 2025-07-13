@@ -4,6 +4,8 @@
     android:targetCellHeight="2"
     android:minWidth="100dp"
     android:resizeMode="horizontal|vertical"
-    android:initialLayout="@layout/glance_default_loading_layout">
+    android:initialLayout="@layout/glance_default_loading_layout"
+    android:configure="town.amrita.timetable.activity.MainActivity"
+    android:widgetFeatures="reconfigurable">
 
 </appwidget-provider>

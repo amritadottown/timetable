@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "me.heftymouse.timetable"
+    namespace = "town.amrita.timetable"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "me.heftymouse.timetable"
+        applicationId = "town.amrita.timetable"
         minSdk = 29
         targetSdk = 36
         versionCode = 1
