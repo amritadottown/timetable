@@ -9,14 +9,14 @@ import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun TimetableTheme(content: @Composable () -> Unit) {
-    val colorScheme =
-        if (isSystemInDarkTheme())
-            dynamicDarkColorScheme(LocalContext.current)
-        else
-            dynamicLightColorScheme(LocalContext.current)
+  val colorScheme =
+    if (isSystemInDarkTheme())
+      dynamicDarkColorScheme(LocalContext.current)
+    else
+      dynamicLightColorScheme(LocalContext.current)
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        content = content
-    )
+  MaterialTheme(
+    colorScheme = colorScheme,
+    content = content
+  )
 }

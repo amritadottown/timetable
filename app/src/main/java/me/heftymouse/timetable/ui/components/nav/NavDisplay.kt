@@ -52,9 +52,9 @@ import androidx.navigation3.ui.NavDisplay.POP_TRANSITION_SPEC
 import androidx.navigation3.ui.NavDisplay.PREDICTIVE_POP_TRANSITION_SPEC
 import androidx.navigation3.ui.NavDisplay.TRANSITION_SPEC
 import androidx.navigationevent.compose.NavigationEventHandler
-import kotlin.reflect.KClass
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
+import kotlin.reflect.KClass
 
 /** Object that indicates the features that can be handled by the [NavDisplay] */
 public object NavDisplay {
@@ -343,10 +343,12 @@ public fun <T : Any> NavDisplay(
           transitionEntry.contentTransform(PREDICTIVE_POP_TRANSITION_SPEC)?.invoke(this)
             ?: predictivePopTransitionSpec(this)
         }
+
         isPop -> {
           transitionEntry.contentTransform(POP_TRANSITION_SPEC)?.invoke(this)
             ?: popTransitionSpec(this)
         }
+
         else -> {
           transitionEntry.contentTransform(TRANSITION_SPEC)?.invoke(this)
             ?: transitionSpec(this)

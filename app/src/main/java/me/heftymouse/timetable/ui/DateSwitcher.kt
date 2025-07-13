@@ -1,6 +1,7 @@
 package me.heftymouse.timetable.ui
 
 import android.app.Activity
+import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,11 +11,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -26,10 +28,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import me.heftymouse.timetable.R
+import me.heftymouse.timetable.activity.MainActivity
 import me.heftymouse.timetable.models.lockedUntilKey
 import me.heftymouse.timetable.models.updateDay
 import me.heftymouse.timetable.models.updateLock
@@ -71,43 +75,33 @@ fun DateSwitcher() {
           Row(
             Modifier
               .fillMaxWidth()
-              .padding(16.dp),
+              .padding(start = 12.dp, end = 0.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
           ) {
             Text(style = MaterialTheme.typography.titleLarge, text = "Day")
-            if (isLocked) {
-              Button(onClick = {
-                scope.launch {
-                  context.updateLock(false)
-                }
-
-              }) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                  Icon(
-                    painter = painterResource(R.drawable.lock_open_24px),
-                    contentDescription = "Unlock"
-                  )
-                  Spacer(Modifier.width(4.dp))
-                  Text("Unlock")
-                }
-              }
-            } else {
-              TextButton(
-                onClick = {
+            Row(
+              horizontalArrangement = Arrangement.spacedBy(8.dp),
+              verticalAlignment = Alignment.CenterVertically
+            ) {
+              Text("Lock")
+              Switch(
+                checked = isLocked,
+                onCheckedChange = {
                   scope.launch {
-                    context.updateLock(true)
+                    context.updateLock(it)
                   }
                 }
-              ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                  Icon(
-                    painter = painterResource(R.drawable.lock_24px),
-                    contentDescription = "Lock"
-                  )
-                  Spacer(Modifier.width(4.dp))
-                  Text("Lock")
-                }
+              )
+
+              IconButton(onClick = {
+                val intent = Intent(context, MainActivity::class.java)
+                context.startActivity(intent)
+              }) {
+                Icon(
+                  painter = painterResource(R.drawable.settings_24px),
+                  contentDescription = "Settings"
+                )
               }
             }
           }
@@ -137,4 +131,10 @@ fun DateSwitcher() {
 
     }
   }
+}
+
+@Preview
+@Composable
+fun DateSwitcherPreview() {
+  DateSwitcher()
 }

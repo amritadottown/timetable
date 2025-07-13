@@ -1,6 +1,7 @@
 package me.heftymouse.timetable.models
 
 import android.content.Context
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -15,35 +16,44 @@ val Context.widgetConfig by preferencesDataStore("TimetableWidget")
 val dayKey = stringPreferencesKey("TIMETABLE_DAY")
 val fileKey = stringPreferencesKey("TIMETABLE_FILE")
 val lockedUntilKey = longPreferencesKey("TIMETABLE_LOCKED_UNTIL")
+val isLocalKey = booleanPreferencesKey("TIMETABLE_IS_LOCAL")
 
 suspend fun Context.updateDay(day: String) {
-    this.widgetConfig.updateData {
-        it.toMutablePreferences().apply { this[dayKey] = day }
-    }
+  this.widgetConfig.updateData {
+    it.toMutablePreferences().apply { this[dayKey] = day }
+  }
 
-    TimetableAppWidget().updateAll(this)
+  TimetableAppWidget().updateAll(this)
 }
 
 suspend fun Context.updateFile(file: String) {
-    this.widgetConfig.updateData {
-        it.toMutablePreferences().apply { this[fileKey] = file }
-    }
+  this.widgetConfig.updateData {
+    it.toMutablePreferences().apply { this[fileKey] = file }
+  }
 
-    TimetableAppWidget().updateAll(this)
+  TimetableAppWidget().updateAll(this)
 }
 
 suspend fun Context.updateLock(isLocked: Boolean) {
-    this.widgetConfig.updateData {
-        it.toMutablePreferences().apply {
-            this[lockedUntilKey] =
-                if(isLocked)
-                    LocalDateTime.now()
-                        .plusDays(1)
-                        .truncatedTo(ChronoUnit.DAYS)
-                        .toEpochSecond(ZonedDateTime.now().offset)
-                else Instant.MIN.epochSecond
-        }
+  this.widgetConfig.updateData {
+    it.toMutablePreferences().apply {
+      this[lockedUntilKey] =
+        if (isLocked)
+          LocalDateTime.now()
+            .plusDays(1)
+            .truncatedTo(ChronoUnit.DAYS)
+            .toEpochSecond(ZonedDateTime.now().offset)
+        else Instant.MIN.epochSecond
     }
+  }
 
-    TimetableAppWidget().updateAll(this)
+  TimetableAppWidget().updateAll(this)
+}
+
+suspend fun Context.updateIsLocal(isLocal: Boolean) {
+  this.widgetConfig.updateData {
+    it.toMutablePreferences().apply { this[isLocalKey] = isLocal }
+  }
+
+  TimetableAppWidget().updateAll(this)
 }

@@ -1,34 +1,34 @@
 {
   "subjects": {
     "A": {
-      "name": "Theory of Computation",
-      "code": "23CSE303",
-      "faculty": "Dr. Gurupriya M",
-      "shortName": "TOC"
+      "name": "Machine Learning",
+      "code": "23CSE301",
+      "faculty": "Dr. Peeta Basa Pati (Co-Dr. Debanjali B)",
+      "shortName": "ML"
     },
     "B": {
-      "name": "Embedded Systems",
-      "code": "23CSE304",
-      "faculty": "Dr. Meena Belwal (Co- Ms. Kavitha C R)",
-      "shortName": "ES"
-    },
-    "C": {
       "name": "Neural Networks and Deep Learning",
       "code": "23CSE473",
       "faculty": "Ms Saranya Devi (Ms. Niharika Panda)",
       "shortName": "NNDL"
     },
-    "D": {
+    "C": {
       "name": "Computer Networks",
       "code": "23CSE302",
       "faculty": "Dr. Thangam S (Co-Dr. Shinu M R)",
       "shortName": "CN"
     },
+    "D": {
+      "name": "Theory of Computation",
+      "code": "23CSE303",
+      "faculty": "Dr. Gurupriya M",
+      "shortName": "TOC"
+    },
     "E": {
-      "name": "Machine Learning",
-      "code": "23CSE301",
-      "faculty": "Dr. Peeta Basa Pati (Co-Dr. Debanjali B)",
-      "shortName": "ML"
+      "name": "Embedded Systems",
+      "code": "23CSE304",
+      "faculty": "Dr. Meena Belwal (Co- Ms. Kavitha C R)",
+      "shortName": "ES"
     },
     "PE2": {
       "name": "NLP/Robotics",
@@ -54,6 +54,6 @@
     "Tuesday": ["PE2_LAB", "EVS", "C", "E_LAB"],
     "Wednesday": ["C", "B", "FREE", "E", "CIR", "A", "D"],
     "Thursday": ["C", "CIR", "CIR", "CIR", "D", "A_LAB"],
-    "Friday": ["D", "PE2", "A", "B_LAB", "C", "E"]
+    "Friday": ["D", "PE2", "A", "B_LAB", "E", "C"]
   }
 }

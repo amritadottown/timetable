@@ -1,6 +1,7 @@
 package me.heftymouse.timetable.ui.components
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,19 +19,29 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun TimetableScaffold(title: String, content: @Composable () -> Unit) {
+fun TimetableScaffold(
+  title: String,
+  actions: @Composable (RowScope.() -> Unit) = {},
+  content: @Composable () -> Unit,
+) {
   Scaffold(
     modifier = Modifier.fillMaxSize(),
     containerColor = MaterialTheme.colorScheme.surfaceContainer,
     topBar = @Composable {
       LargeTopAppBar(
         title = @Composable { Text(title, style = MaterialTheme.typography.displaySmall) },
-        colors = TopAppBarDefaults.mediumTopAppBarColors()
+        colors = TopAppBarDefaults.topAppBarColors()
           .copy(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        windowInsets = TopAppBarDefaults.windowInsets.add(WindowInsets(left = 8.dp, right = 8.dp))
+        windowInsets = TopAppBarDefaults.windowInsets.add(WindowInsets(left = 8.dp, right = 8.dp)),
+        actions = actions
       )
     },
-    contentWindowInsets = ScaffoldDefaults.contentWindowInsets.add(WindowInsets(left = 24.dp, right = 24.dp))
+    contentWindowInsets = ScaffoldDefaults.contentWindowInsets.add(
+      WindowInsets(
+        left = 24.dp,
+        right = 24.dp
+      )
+    )
   ) { innerPadding ->
     Box(Modifier.padding(innerPadding)) {
       content()

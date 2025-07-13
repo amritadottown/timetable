@@ -4,8 +4,6 @@
     android:targetCellHeight="2"
     android:minWidth="100dp"
     android:resizeMode="horizontal|vertical"
-    android:configure="me.heftymouse.timetable.activity.MainActivity"
-    android:widgetFeatures="reconfigurable"
     android:initialLayout="@layout/glance_default_loading_layout">
 
 </appwidget-provider>

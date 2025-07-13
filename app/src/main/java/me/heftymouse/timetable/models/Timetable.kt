@@ -32,8 +32,30 @@ data class Subject(
   val name: String,
   val code: String,
   val faculty: String,
-  val shortName: String = name.split(" ").map({ e -> e[0] }).filter({ e -> e.isUpperCase() }).joinToString(separator = "")
+  val shortName: String = name.split(" ").map({ e -> e[0] }).filter({ e -> e.isUpperCase() })
+    .joinToString(separator = "")
 )
+
+@Serializable
+data class TimetableSpec(
+  val year: String,
+  val section: String,
+  val semester: String
+) {
+  override fun toString(): String {
+    return "${this.year}_${this.section}_${this.semester}"
+  }
+
+  companion object {
+    fun fromString(string: String): TimetableSpec {
+      val sp = string.split("_")
+      if (sp.size != 3)
+        throw IllegalArgumentException("Invalid spec: $string")
+
+      return TimetableSpec(sp[0], sp[1], sp[2])
+    }
+  }
+}
 
 data class TimetableDisplayEntry(
   val name: String,

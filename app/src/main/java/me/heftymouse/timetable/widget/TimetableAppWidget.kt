@@ -1,8 +1,7 @@
 package me.heftymouse.timetable.widget
 
+import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
-import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -65,12 +64,6 @@ import me.heftymouse.timetable.widget.Sizes.BEEG
 import me.heftymouse.timetable.widget.Sizes.SMOL
 import java.time.Instant
 import java.util.concurrent.TimeUnit
-import androidx.compose.ui.platform.LocalResources
-import androidx.glance.action.Action
-import androidx.glance.action.ActionParameters
-import androidx.glance.appwidget.action.ActionCallback
-import androidx.glance.appwidget.action.actionRunCallback
-
 
 class TimetableWidgetReceiver : GlanceAppWidgetReceiver() {
   override val glanceAppWidget: GlanceAppWidget = TimetableAppWidget()
@@ -83,7 +76,7 @@ class TimetableAppWidget : GlanceAppWidget() {
       val store = context.widgetConfig
       val initial = store.data.first()
       val timetable = store.data.map {
-        val file = context.openFileInput(it[fileKey])
+        val file = context.openFileInput("${it[fileKey]?.removeSuffix(".json")}.json")
         val timetable = Json.decodeFromStream<Timetable>(file)
         buildTimetableDisplay(it[dayKey] ?: TODAY, timetable)
       }.stateIn(this)
@@ -158,22 +151,8 @@ fun TimetableWidget(day: String, isLockedNow: Boolean, times: List<TimetableDisp
   }
 }
 
-class Thingy : ActionCallback {
-  override suspend fun onAction(
-    context: Context,
-    glanceId: GlanceId,
-    parameters: ActionParameters
-  ) {
-    val intent = Intent(context, DateSwitcherActivity::class.java).apply {
-      flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION
-    }
-    context.startActivity(intent)
-  }
-}
-
 @Composable
 fun TitleBar(day: String, locked: Boolean) {
-  val textStyle = TextStyle(color = GlanceTheme.colors.onSurface)
   val strongTextStyle =
     TextStyle(color = GlanceTheme.colors.onSurface, fontWeight = FontWeight.Medium)
 
@@ -183,7 +162,7 @@ fun TitleBar(day: String, locked: Boolean) {
       modifier = GlanceModifier
         .fillMaxWidth()
         .padding(horizontal = 16.dp, vertical = 14.dp)
-        .clickable(actionRunCallback<Thingy>())
+        .clickable(actionStartActivity<DateSwitcherActivity>())
     ) {
       Box(
         contentAlignment = Alignment.Center,
@@ -248,7 +227,7 @@ fun TimetableItem(item: TimetableDisplayEntry) {
             "Period ${if (start == end) start + 1 else "${start + 1} → ${end + 1}"}",
             style = textStyle
           )
-          if(isBeeg) {
+          if (isBeeg) {
             Text(
               "•",
               style = textStyle,
@@ -262,6 +241,7 @@ fun TimetableItem(item: TimetableDisplayEntry) {
   }
 }
 
+@SuppressLint("LocalContextResourcesRead")
 @Composable
 fun GlanceModifier.appWidgetInnerCornerRadius(widgetPadding: Dp): GlanceModifier {
   val resources = LocalContext.current.resources
