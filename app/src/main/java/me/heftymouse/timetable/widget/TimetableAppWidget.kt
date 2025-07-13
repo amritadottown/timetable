@@ -2,6 +2,7 @@ package me.heftymouse.timetable.widget
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -244,6 +245,10 @@ fun TimetableItem(item: TimetableDisplayEntry) {
 @SuppressLint("LocalContextResourcesRead")
 @Composable
 fun GlanceModifier.appWidgetInnerCornerRadius(widgetPadding: Dp): GlanceModifier {
+  if (Build.VERSION.SDK_INT < 31) {
+    return this
+  }
+
   val resources = LocalContext.current.resources
   // get dimension in float (without rounding).
   val px = resources.getDimension(android.R.dimen.system_app_widget_background_radius)

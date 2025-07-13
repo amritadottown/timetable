@@ -12,7 +12,7 @@
         android:label="Timetable"
         android:supportsRtl="true"
         android:theme="@style/Theme.Timetable"
-        tools:targetApi="34">
+        tools:targetApi="36">
 
         <activity
             android:name=".activity.MainActivity"

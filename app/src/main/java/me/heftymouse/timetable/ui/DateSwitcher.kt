@@ -61,7 +61,7 @@ fun DateSwitcher() {
     ModalBottomSheet(
       onDismissRequest = { (context as? Activity)?.finish() },
       sheetState = rememberModalBottomSheetState(true),
-      contentWindowInsets = { WindowInsets(0.dp) },
+      contentWindowInsets = { WindowInsets(bottom = 12.dp) },
     ) {
       LazyColumn(
         Modifier.padding(
