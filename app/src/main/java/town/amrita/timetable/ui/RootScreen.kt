@@ -37,7 +37,6 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import town.amrita.timetable.R
 
-data object HomeRoute
 data object RegistryRoute
 data object AboutRoute
 
@@ -77,11 +76,6 @@ fun RootScreen() {
         rememberViewModelStoreNavEntryDecorator()
       ),
       entryProvider = entryProvider {
-        entry<HomeRoute> {
-          HomeScreen(openRegistryPage = {
-            backStack.add(RegistryRoute)
-          })
-        }
         entry<RegistryRoute> {
           TimetablePickerScreen(
             globalActions = globalActions

@@ -11,11 +11,18 @@ import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+
+val LocalSnackbarState = compositionLocalOf<SnackbarHostState> { error("No snackbar state") }
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -24,6 +31,8 @@ fun TimetableScaffold(
   actions: @Composable (RowScope.() -> Unit) = {},
   content: @Composable () -> Unit,
 ) {
+  val snackbarHostState = remember { SnackbarHostState() }
+
   Scaffold(
     modifier = Modifier.fillMaxSize(),
     containerColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -41,10 +50,13 @@ fun TimetableScaffold(
         left = 24.dp,
         right = 24.dp
       )
-    )
+    ),
+    snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
   ) { innerPadding ->
-    Box(Modifier.padding(innerPadding)) {
-      content()
+    CompositionLocalProvider(LocalSnackbarState provides snackbarHostState) {
+      Box(Modifier.padding(innerPadding)) {
+        content()
+      }
     }
   }
 }

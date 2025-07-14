@@ -46,6 +46,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
@@ -67,6 +68,10 @@ import town.amrita.timetable.utils.getFileContent
 import town.amrita.timetable.utils.updateTimetableFromRegistry
 import town.amrita.timetable.utils.updateTimetableFromUri
 import retrofit2.await
+import town.amrita.timetable.ui.components.LocalSnackbarState
+import town.amrita.timetable.widget.Sizes
+import town.amrita.timetable.widget.TimetableAppWidget
+import town.amrita.timetable.widget.TimetableWidgetReceiver
 
 @OptIn(ExperimentalSerializationApi::class)
 @Composable
@@ -126,6 +131,8 @@ fun TimetablePickerScreen(
     title = "Select Timetable",
     actions = globalActions
   ) {
+    val snackbarHostState = LocalSnackbarState.current
+
     Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(24.dp)) {
 
       SecondaryTabRow(selectedTabIndex = selectedTab, containerColor = Color.Transparent) {
@@ -239,6 +246,15 @@ fun TimetablePickerScreen(
             if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
               val activity = context as ComponentActivity
               activity.finish()
+            } else {
+              val appWidgetManager = GlanceAppWidgetManager(context)
+              if (appWidgetManager.getGlanceIds(TimetableAppWidget::class.java).isEmpty()) {
+                appWidgetManager.requestPinGlanceAppWidget(
+                  TimetableWidgetReceiver::class.java,
+                  TimetableAppWidget(), Sizes.BEEG)
+              } else {
+                snackbarHostState.showSnackbar(message = "Timetable updated", withDismissAction = true)
+              }
             }
           }
         }) {
