@@ -249,9 +249,11 @@ fun TimetablePickerScreen(
             } else {
               val appWidgetManager = GlanceAppWidgetManager(context)
               if (appWidgetManager.getGlanceIds(TimetableAppWidget::class.java).isEmpty()) {
-                appWidgetManager.requestPinGlanceAppWidget(
+                if(!appWidgetManager.requestPinGlanceAppWidget(
                   TimetableWidgetReceiver::class.java,
-                  TimetableAppWidget(), Sizes.BEEG)
+                  TimetableAppWidget(), Sizes.BEEG)) {
+                  snackbarHostState.showSnackbar(message = "Timetable updated. Place the Timetable widget on your home screen to see it.", withDismissAction = true)
+                }
               } else {
                 snackbarHostState.showSnackbar(message = "Timetable updated", withDismissAction = true)
               }
