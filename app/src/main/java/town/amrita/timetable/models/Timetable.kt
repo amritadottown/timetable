@@ -66,6 +66,9 @@ data class TimetableDisplayEntry(
   val lab: Boolean
 )
 
+val FREE_SUBJECT = Subject("Free", "", "")
+val UNKNOWN_SUBJECT = Subject("⚠️ Unknown", "", "")
+
 fun buildTimetableDisplay(day: String, timetable: Timetable): List<TimetableDisplayEntry> {
   if (!timetable.schedule.containsKey(day))
     return emptyList()
@@ -73,19 +76,23 @@ fun buildTimetableDisplay(day: String, timetable: Timetable): List<TimetableDisp
   val times: MutableList<TimetableDisplayEntry> = mutableListOf()
   var i = 0
   timetable.schedule[day]?.forEach { x ->
-    val subject = when (x) {
-      "FREE" -> Subject("Free", "", "")
-      else -> timetable.subjects[x.removeSuffix("_LAB")]!!
+    val name = x.removeSuffix("_LAB")
+    val isLab = x.endsWith("_LAB")
+
+    val subject = when (name) {
+      "FREE" -> FREE_SUBJECT
+      in timetable.subjects -> timetable.subjects[name] ?: UNKNOWN_SUBJECT
+      else -> UNKNOWN_SUBJECT
     }
 
-    val offset = if (x.endsWith("_LAB"))
+    val offset = if (isLab)
       when (i) {
         0 -> 3
         else -> 2
       }
     else 1
 
-    val slot = if (x.endsWith("_LAB"))
+    val slot = if (isLab)
       when (i) {
         0 -> timetable.labSlots[0]
         3 -> timetable.labSlots[1]

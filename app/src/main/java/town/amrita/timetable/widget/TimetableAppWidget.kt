@@ -56,9 +56,6 @@ import town.amrita.timetable.activity.DateSwitcherActivity
 import town.amrita.timetable.models.Timetable
 import town.amrita.timetable.models.TimetableDisplayEntry
 import town.amrita.timetable.models.buildTimetableDisplay
-import town.amrita.timetable.models.dayKey
-import town.amrita.timetable.models.fileKey
-import town.amrita.timetable.models.lockedUntilKey
 import town.amrita.timetable.models.widgetConfig
 import town.amrita.timetable.utils.TODAY
 import town.amrita.timetable.widget.Sizes.BEEG
@@ -77,9 +74,9 @@ class TimetableAppWidget : GlanceAppWidget() {
       val store = context.widgetConfig
       val initial = store.data.first()
       val timetable = store.data.map {
-        val file = context.openFileInput("${it[fileKey]?.removeSuffix(".json")}.json")
+        val file = context.openFileInput("${it.file?.removeSuffix(".json")}.json")
         val timetable = Json.decodeFromStream<Timetable>(file)
-        buildTimetableDisplay(it[dayKey] ?: TODAY, timetable)
+        buildTimetableDisplay(it.day ?: TODAY, timetable)
       }.stateIn(this)
 
       val work = PeriodicWorkRequestBuilder<UpdateWorker>(30, TimeUnit.MINUTES)
@@ -90,11 +87,11 @@ class TimetableAppWidget : GlanceAppWidget() {
 
       provideContent {
         val data by store.data.collectAsState(initial)
-        val day = data[dayKey] ?: TODAY
+        val day = data.day ?: TODAY
         val times by timetable.collectAsState()
 
         val isLockedNow =
-          with(data[lockedUntilKey]) {
+          with(data.lockedUntil) {
             if (this != null)
               Instant.ofEpochSecond(this).isAfter(Instant.now())
             else false

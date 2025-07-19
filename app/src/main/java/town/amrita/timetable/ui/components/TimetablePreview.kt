@@ -30,23 +30,27 @@ import town.amrita.timetable.models.Timetable
 import town.amrita.timetable.models.TimetableDisplayEntry
 import town.amrita.timetable.models.buildTimetableDisplay
 import town.amrita.timetable.utils.DAYS
+import town.amrita.timetable.utils.TODAY
 
 @Composable
 fun TimetablePreview(modifier: Modifier = Modifier, timetable: Timetable?) {
   Box(modifier) {
     if (timetable != null) {
-      val pagerState = rememberPagerState { timetable.schedule.keys.size }
+      val pagerState = rememberPagerState(initialPage = DAYS.indexOf(TODAY)) { timetable.schedule.keys.size }
       HorizontalPager(state = pagerState, pageSpacing = 16.dp) { page ->
         val day = DAYS[page]
         val timetableDisplay = remember(timetable, day) { buildTimetableDisplay(day, timetable) }
-        Column(
-          modifier = Modifier
-            .fillMaxHeight()
-            .verticalScroll(rememberScrollState()),
-          verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-          timetableDisplay.map {
-            TimetableItem(it)
+        Column {
+          Text(day, Modifier.padding(start = 8.dp, bottom = 8.dp), fontWeight = FontWeight.Medium)
+          Column(
+            modifier = Modifier
+              .fillMaxHeight()
+              .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+          ) {
+            timetableDisplay.map {
+              TimetableItem(it)
+            }
           }
         }
       }
@@ -65,7 +69,7 @@ private fun TimetableItem(item: TimetableDisplayEntry) {
       Modifier.fillMaxWidth(),
       shape = MaterialTheme.shapes.medium,
       colors = CardDefaults.cardColors()
-        .copy(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)
+        .copy(containerColor = MaterialTheme.colorScheme.onSecondary)
     ) {
       Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {

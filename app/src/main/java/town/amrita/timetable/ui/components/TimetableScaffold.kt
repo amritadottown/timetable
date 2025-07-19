@@ -21,6 +21,7 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import town.amrita.timetable.ui.LocalGlobalActions
 
 val LocalSnackbarState = compositionLocalOf<SnackbarHostState> { error("No snackbar state") }
 
@@ -28,7 +29,7 @@ val LocalSnackbarState = compositionLocalOf<SnackbarHostState> { error("No snack
 @OptIn(ExperimentalMaterial3Api::class)
 fun TimetableScaffold(
   title: String,
-  actions: @Composable (RowScope.() -> Unit) = {},
+  actions: @Composable (RowScope.() -> Unit) = LocalGlobalActions.current,
   content: @Composable () -> Unit,
 ) {
   val snackbarHostState = remember { SnackbarHostState() }

@@ -7,28 +7,16 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.input.TextFieldLineLimits
-import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
@@ -56,19 +44,20 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
+import retrofit2.await
 import town.amrita.timetable.activity.LocalWidgetId
 import town.amrita.timetable.models.Timetable
 import town.amrita.timetable.models.TimetableSpec
 import town.amrita.timetable.registry.RegistryService
 import town.amrita.timetable.registry.RegistryYears
+import town.amrita.timetable.ui.components.DropdownPicker
+import town.amrita.timetable.ui.components.LocalSnackbarState
 import town.amrita.timetable.ui.components.TimetablePreview
 import town.amrita.timetable.ui.components.TimetableScaffold
 import town.amrita.timetable.utils.getDisplayName
 import town.amrita.timetable.utils.getFileContent
 import town.amrita.timetable.utils.updateTimetableFromRegistry
 import town.amrita.timetable.utils.updateTimetableFromUri
-import retrofit2.await
-import town.amrita.timetable.ui.components.LocalSnackbarState
 import town.amrita.timetable.widget.Sizes
 import town.amrita.timetable.widget.TimetableAppWidget
 import town.amrita.timetable.widget.TimetableWidgetReceiver
@@ -76,12 +65,12 @@ import town.amrita.timetable.widget.TimetableWidgetReceiver
 @OptIn(ExperimentalSerializationApi::class)
 @Composable
 fun TimetablePickerScreen(
-  viewModel: RegistryScreenViewModel = viewModel(),
-  globalActions: @Composable (RowScope.() -> Unit) = {}
+  viewModel: RegistryScreenViewModel = viewModel()
 ) {
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
   val state by viewModel.state.collectAsStateWithLifecycle()
+
 
   val launcher =
     rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -128,8 +117,7 @@ fun TimetablePickerScreen(
   }
 
   TimetableScaffold(
-    title = "Select Timetable",
-    actions = globalActions
+    title = "Select Timetable"
   ) {
     val snackbarHostState = LocalSnackbarState.current
 
@@ -153,27 +141,21 @@ fun TimetablePickerScreen(
           with(state.registryState) {
             if (ready) {
               Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Box {
-                  DropdownPicker(
-                    options = years.toList(),
-                    selected = currentYear,
-                    label = "Start Year",
-                    onSelectionChanged = { viewModel.yearChanged(it) })
-                }
-                Box {
-                  DropdownPicker(
-                    options = sections.toList(),
-                    selected = currentSection,
-                    label = "Section",
-                    onSelectionChanged = { viewModel.sectionChanged(it) })
-                }
-                Box {
-                  DropdownPicker(
-                    options = semesters.toList(),
-                    selected = currentSemester,
-                    label = "Semester",
-                    onSelectionChanged = { viewModel.semesterChanged(it) })
-                }
+                DropdownPicker(
+                  options = years.toList(),
+                  selected = currentYear,
+                  label = "Start Year",
+                  onSelectionChanged = { viewModel.yearChanged(it) })
+                DropdownPicker(
+                  options = sections.toList(),
+                  selected = currentSection,
+                  label = "Section",
+                  onSelectionChanged = { viewModel.sectionChanged(it) })
+                DropdownPicker(
+                  options = semesters.toList(),
+                  selected = currentSemester,
+                  label = "Semester",
+                  onSelectionChanged = { viewModel.semesterChanged(it) })
               }
             } else {
               Column(
@@ -215,9 +197,11 @@ fun TimetablePickerScreen(
             .fillMaxSize(), timetable = timetable
         )
       } else {
-        Spacer(Modifier
-          .weight(1f)
-          .fillMaxSize())
+        Spacer(
+          Modifier
+            .weight(1f)
+            .fillMaxSize()
+        )
       }
 
       Button(
@@ -249,13 +233,21 @@ fun TimetablePickerScreen(
             } else {
               val appWidgetManager = GlanceAppWidgetManager(context)
               if (appWidgetManager.getGlanceIds(TimetableAppWidget::class.java).isEmpty()) {
-                if(!appWidgetManager.requestPinGlanceAppWidget(
-                  TimetableWidgetReceiver::class.java,
-                  TimetableAppWidget(), Sizes.BEEG)) {
-                  snackbarHostState.showSnackbar(message = "Timetable updated. Place the Timetable widget on your home screen to see it.", withDismissAction = true)
+                if (!appWidgetManager.requestPinGlanceAppWidget(
+                    TimetableWidgetReceiver::class.java,
+                    TimetableAppWidget(), Sizes.BEEG
+                  )
+                ) {
+                  snackbarHostState.showSnackbar(
+                    message = "Timetable updated. Place the Timetable widget on your home screen to see it.",
+                    withDismissAction = true
+                  )
                 }
               } else {
-                snackbarHostState.showSnackbar(message = "Timetable updated", withDismissAction = true)
+                snackbarHostState.showSnackbar(
+                  message = "Timetable updated",
+                  withDismissAction = true
+                )
               }
             }
           }
@@ -364,57 +356,6 @@ class RegistryScreenViewModel : ViewModel() {
           fileName = newName
         )
       )
-    }
-  }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun DropdownPicker(
-  modifier: Modifier = Modifier,
-  options: List<String>,
-  selected: String?,
-  label: String,
-  onSelectionChanged: (String?) -> Unit
-) {
-  var expanded by remember { mutableStateOf(false) }
-  val textFieldState = TextFieldState(selected ?: "Select")
-
-  ExposedDropdownMenuBox(
-    modifier = modifier,
-    expanded = expanded,
-    onExpandedChange = { expanded = it }) {
-    OutlinedTextField(
-      modifier = Modifier
-        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-        .fillMaxWidth(),
-      state = textFieldState,
-      label = @Composable { Text(label) },
-      readOnly = true,
-      lineLimits = TextFieldLineLimits.SingleLine,
-      trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) }
-    )
-    ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-      DropdownMenuItem(
-        text = { Text("Select", style = MaterialTheme.typography.bodyLarge) },
-        onClick = {
-          textFieldState.setTextAndPlaceCursorAtEnd("Select")
-          expanded = false
-          onSelectionChanged(null)
-        },
-        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
-      )
-      options.forEach { option ->
-        DropdownMenuItem(
-          text = { Text(option, style = MaterialTheme.typography.bodyLarge) },
-          onClick = {
-            textFieldState.setTextAndPlaceCursorAtEnd(option)
-            expanded = false
-            onSelectionChanged(option)
-          },
-          contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
-        )
-      }
     }
   }
 }

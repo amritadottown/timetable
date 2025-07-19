@@ -34,7 +34,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import town.amrita.timetable.R
 import town.amrita.timetable.activity.MainActivity
-import town.amrita.timetable.models.lockedUntilKey
 import town.amrita.timetable.models.updateDay
 import town.amrita.timetable.models.updateLock
 import town.amrita.timetable.models.widgetConfig
@@ -50,7 +49,7 @@ fun DateSwitcher() {
 
   val data = context.widgetConfig.data
   val isLockedFlow = data.map { prefs ->
-    val e = prefs[lockedUntilKey]
+    val e = prefs.lockedUntil
     if (e != null)
       Instant.ofEpochSecond(e).isAfter(Instant.now())
     else false

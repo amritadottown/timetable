@@ -1,26 +1,53 @@
 package town.amrita.timetable.models
 
 import android.content.Context
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.longPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
+import androidx.datastore.core.Serializer
+import androidx.datastore.dataStore
 import androidx.glance.appwidget.updateAll
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
+import kotlinx.serialization.json.encodeToStream
 import town.amrita.timetable.widget.TimetableAppWidget
+import java.io.InputStream
+import java.io.OutputStream
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
-val Context.widgetConfig by preferencesDataStore("TimetableWidget")
-val dayKey = stringPreferencesKey("TIMETABLE_DAY")
-val fileKey = stringPreferencesKey("TIMETABLE_FILE")
-val lockedUntilKey = longPreferencesKey("TIMETABLE_LOCKED_UNTIL")
-val isLocalKey = booleanPreferencesKey("TIMETABLE_IS_LOCAL")
+@Serializable
+data class WidgetConfig(
+  val day: String? = null,
+  val isLocal: Boolean = true,
+  val file: String? = null,
+  val electiveChoices: Map<String, String> = emptyMap(),
+  val lockedUntil: Long? = null
+)
+
+private object WidgetConfigSerializer : Serializer<WidgetConfig> {
+  override val defaultValue: WidgetConfig = WidgetConfig()
+
+  @OptIn(ExperimentalSerializationApi::class)
+  override suspend fun readFrom(input: InputStream): WidgetConfig {
+    return Json.decodeFromStream(input)
+  }
+
+  @OptIn(ExperimentalSerializationApi::class)
+  override suspend fun writeTo(t: WidgetConfig, output: OutputStream) {
+    return Json.encodeToStream(t, output)
+  }
+}
+
+val Context.widgetConfig by dataStore(
+  fileName = "widget_config.json",
+  serializer = WidgetConfigSerializer
+)
 
 suspend fun Context.updateDay(day: String) {
   this.widgetConfig.updateData {
-    it.toMutablePreferences().apply { this[dayKey] = day }
+    it.copy(day = day)
   }
 
   TimetableAppWidget().updateAll(this)
@@ -28,7 +55,7 @@ suspend fun Context.updateDay(day: String) {
 
 suspend fun Context.updateFile(file: String) {
   this.widgetConfig.updateData {
-    it.toMutablePreferences().apply { this[fileKey] = file }
+    it.copy(file = file)
   }
 
   TimetableAppWidget().updateAll(this)
@@ -36,15 +63,14 @@ suspend fun Context.updateFile(file: String) {
 
 suspend fun Context.updateLock(isLocked: Boolean) {
   this.widgetConfig.updateData {
-    it.toMutablePreferences().apply {
-      this[lockedUntilKey] =
+    it.copy(lockedUntil =
         if (isLocked)
           LocalDateTime.now()
             .plusDays(1)
             .truncatedTo(ChronoUnit.DAYS)
             .toEpochSecond(ZonedDateTime.now().offset)
         else Instant.MIN.epochSecond
-    }
+    )
   }
 
   TimetableAppWidget().updateAll(this)
@@ -52,7 +78,7 @@ suspend fun Context.updateLock(isLocked: Boolean) {
 
 suspend fun Context.updateIsLocal(isLocal: Boolean) {
   this.widgetConfig.updateData {
-    it.toMutablePreferences().apply { this[isLocalKey] = isLocal }
+    it.copy(isLocal = isLocal)
   }
 
   TimetableAppWidget().updateAll(this)

@@ -18,11 +18,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -39,6 +41,8 @@ import town.amrita.timetable.R
 
 data object RegistryRoute
 data object AboutRoute
+
+val LocalGlobalActions = staticCompositionLocalOf<@Composable (RowScope.() -> Unit)> { {  } }
 
 @Composable
 fun RootScreen() {
@@ -66,74 +70,75 @@ fun RootScreen() {
       }
     }
 
-    NavDisplay(
-      modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer),
-      backStack = backStack,
-      onBack = { backStack.removeLastOrNull() },
-      entryDecorators = listOf(
-        rememberSceneSetupNavEntryDecorator(),
-        rememberSavedStateNavEntryDecorator(),
-        rememberViewModelStoreNavEntryDecorator()
-      ),
-      entryProvider = entryProvider {
-        entry<RegistryRoute> {
-          TimetablePickerScreen(
-            globalActions = globalActions
+    CompositionLocalProvider(LocalGlobalActions provides globalActions) {
+
+      NavDisplay(
+        modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer),
+        backStack = backStack,
+        onBack = { backStack.removeLastOrNull() },
+        entryDecorators = listOf(
+          rememberSceneSetupNavEntryDecorator(),
+          rememberSavedStateNavEntryDecorator(),
+          rememberViewModelStoreNavEntryDecorator()
+        ),
+        entryProvider = entryProvider {
+          entry<RegistryRoute> {
+            TimetablePickerScreen()
+          }
+          entry<AboutRoute> {
+            AboutScreen()
+          }
+        },
+        transitionSpec = {
+          ContentTransform(
+            slideIn(
+              animationSpec = tween(
+                durationMillis = 450,
+                easing = materialEasing
+              )
+            ) { _ -> IntOffset(pxValue, 0) },
+            fadeOut(
+              animationSpec = tween(
+                durationMillis = 83,
+                easing = LinearEasing,
+                delayMillis = 50
+              )
+            )
+                    + slideOut(
+              animationSpec = tween(
+                durationMillis = 450,
+                easing = materialEasing
+              )
+            ) { _ -> IntOffset(-pxValue, 0) },
+            -1f
           )
-        }
-        entry<AboutRoute> {
-          AboutScreen()
-        }
-      },
-      transitionSpec = {
-        ContentTransform(
-          slideIn(
-            animationSpec = tween(
-              durationMillis = 450,
-              easing = materialEasing
+        },
+        popTransitionSpec = {
+          ContentTransform(
+            slideIn(
+              animationSpec = tween(
+                durationMillis = 450,
+                easing = materialEasing
+              )
+            ) { _ -> IntOffset(-pxValue, 0) },
+            fadeOut(
+              animationSpec = tween(
+                durationMillis = 83,
+                easing = LinearEasing,
+                delayMillis = 35
+              )
             )
-          ) { _ -> IntOffset(pxValue, 0) },
-          fadeOut(
-            animationSpec = tween(
-              durationMillis = 83,
-              easing = LinearEasing,
-              delayMillis = 50
-            )
+                    + slideOut(
+              animationSpec = tween(
+                durationMillis = 450,
+                easing = materialEasing
+              )
+            ) { _ -> IntOffset(pxValue, 0) },
+            -1f
           )
-                  + slideOut(
-            animationSpec = tween(
-              durationMillis = 450,
-              easing = materialEasing
-            )
-          ) { _ -> IntOffset(-pxValue, 0) },
-          -1f
-        )
-      },
-      popTransitionSpec = {
-        ContentTransform(
-          slideIn(
-            animationSpec = tween(
-              durationMillis = 450,
-              easing = materialEasing
-            )
-          ) { _ -> IntOffset(-pxValue, 0) },
-          fadeOut(
-            animationSpec = tween(
-              durationMillis = 83,
-              easing = LinearEasing,
-              delayMillis = 35
-            )
-          )
-                  + slideOut(
-            animationSpec = tween(
-              durationMillis = 450,
-              easing = materialEasing
-            )
-          ) { _ -> IntOffset(pxValue, 0) },
-          -1f
-        )
-      },
+        },
 //        predictivePopTransitionSpec =
-    )
+      )
+    }
   }
 }

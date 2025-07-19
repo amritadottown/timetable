@@ -10,7 +10,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import town.amrita.timetable.models.fileKey
 import town.amrita.timetable.models.widgetConfig
 import town.amrita.timetable.ui.RootScreen
 
@@ -36,7 +35,7 @@ class MainActivity : ComponentActivity() {
   }
 
   override fun finish() {
-    val currentFileKey = runBlocking { widgetConfig.data.first() }[fileKey]
+    val currentFileKey = runBlocking { widgetConfig.data.first() }.file
     if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID && currentFileKey != null) {
       val resultValue = Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
       setResult(RESULT_OK, resultValue)
