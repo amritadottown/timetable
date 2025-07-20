@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -19,40 +20,53 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import town.amrita.timetable.R
 import town.amrita.timetable.models.Timetable
 import town.amrita.timetable.models.TimetableDisplayEntry
+import town.amrita.timetable.models.WidgetConfig
 import town.amrita.timetable.models.buildTimetableDisplay
+import town.amrita.timetable.models.widgetConfig
 import town.amrita.timetable.utils.DAYS
 import town.amrita.timetable.utils.TODAY
 
 @Composable
 fun TimetablePreview(modifier: Modifier = Modifier, timetable: Timetable?) {
+  val context = LocalContext.current
+  val config = context.widgetConfig.data.collectAsState(WidgetConfig())
+
   Box(modifier) {
     if (timetable != null) {
-      val pagerState = rememberPagerState(initialPage = DAYS.indexOf(TODAY)) { timetable.schedule.keys.size }
-      HorizontalPager(state = pagerState, pageSpacing = 16.dp) { page ->
+      val initialPage = if (timetable.schedule.keys.contains(TODAY)) DAYS.indexOf(TODAY) else 0
+      val pagerState = rememberPagerState(initialPage = initialPage) { timetable.schedule.keys.size }
+      HorizontalPager(state = pagerState, pageSpacing = 8.dp) { page ->
         val day = DAYS[page]
-        val timetableDisplay = remember(timetable, day) { buildTimetableDisplay(day, timetable) }
-        Column {
-          Text(day, Modifier.padding(start = 8.dp, bottom = 8.dp), fontWeight = FontWeight.Medium)
-          Column(
-            modifier = Modifier
-              .fillMaxHeight()
-              .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-          ) {
-            timetableDisplay.map {
-              TimetableItem(it)
+        val timetableDisplay = buildTimetableDisplay(day, timetable, config.value.showFreePeriods)
+          Column {
+            Text(day, Modifier.padding(start = 4.dp, bottom = 12.dp), fontWeight = FontWeight.Medium)
+            if (!timetableDisplay.isEmpty()) {
+              Column(
+                modifier = Modifier
+                  .fillMaxHeight()
+                  .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+              ) {
+                timetableDisplay.map {
+                  TimetableItem(it)
+                }
+              }
+            } else {
+              Box(Modifier.fillMaxSize()) {
+                Text("Nothing today :)", Modifier.align(Alignment.Center))
+              }
             }
           }
-        }
       }
     } else {
       Box(Modifier.matchParentSize()) {
@@ -83,14 +97,11 @@ private fun TimetableItem(item: TimetableDisplayEntry) {
             )
           }
         }
-        Row {
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
           Text(
             "Period ${if (start == end) start + 1 else "${start + 1} → ${end + 1}"}",
           )
-          Text(
-            "•",
-            modifier = Modifier.padding(horizontal = 6.dp)
-          )
+          Text("•")
           Text(slot)
         }
       }

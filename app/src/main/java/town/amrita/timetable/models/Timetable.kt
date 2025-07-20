@@ -69,18 +69,19 @@ data class TimetableDisplayEntry(
 val FREE_SUBJECT = Subject("Free", "", "")
 val UNKNOWN_SUBJECT = Subject("⚠️ Unknown", "", "")
 
-fun buildTimetableDisplay(day: String, timetable: Timetable): List<TimetableDisplayEntry> {
+fun buildTimetableDisplay(day: String, timetable: Timetable, showFreePeriods: Boolean = true): List<TimetableDisplayEntry> {
   if (!timetable.schedule.containsKey(day))
     return emptyList()
 
   val times: MutableList<TimetableDisplayEntry> = mutableListOf()
   var i = 0
-  timetable.schedule[day]?.forEach { x ->
+
+  for (x in timetable.schedule[day] ?: arrayOf()) {
     val name = x.removeSuffix("_LAB")
     val isLab = x.endsWith("_LAB")
 
     val subject = when (name) {
-      "FREE" -> FREE_SUBJECT
+      "FREE" -> if (showFreePeriods) FREE_SUBJECT else break
       in timetable.subjects -> timetable.subjects[name] ?: UNKNOWN_SUBJECT
       else -> UNKNOWN_SUBJECT
     }
@@ -108,7 +109,7 @@ fun buildTimetableDisplay(day: String, timetable: Timetable): List<TimetableDisp
         slot,
         i,
         i + offset - 1,
-        x.endsWith("_LAB")
+        isLab
       )
     )
 

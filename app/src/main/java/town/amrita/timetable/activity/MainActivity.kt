@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import town.amrita.timetable.models.widgetConfig
 import town.amrita.timetable.ui.RootScreen
+import town.amrita.timetable.ui.TimetableTheme
 
 val LocalWidgetId = staticCompositionLocalOf { AppWidgetManager.INVALID_APPWIDGET_ID }
 
@@ -28,8 +29,10 @@ class MainActivity : ComponentActivity() {
     ) ?: AppWidgetManager.INVALID_APPWIDGET_ID
 
     setContent {
-      CompositionLocalProvider(LocalWidgetId provides appWidgetId) {
-        RootScreen()
+      TimetableTheme {
+        CompositionLocalProvider(LocalWidgetId provides appWidgetId) {
+          RootScreen()
+        }
       }
     }
   }

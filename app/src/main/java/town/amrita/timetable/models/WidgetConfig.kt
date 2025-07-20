@@ -23,7 +23,8 @@ data class WidgetConfig(
   val isLocal: Boolean = true,
   val file: String? = null,
   val electiveChoices: Map<String, String> = emptyMap(),
-  val lockedUntil: Long? = null
+  val lockedUntil: Long? = null,
+  val showFreePeriods: Boolean = true
 )
 
 private object WidgetConfigSerializer : Serializer<WidgetConfig> {
@@ -79,6 +80,14 @@ suspend fun Context.updateLock(isLocked: Boolean) {
 suspend fun Context.updateIsLocal(isLocal: Boolean) {
   this.widgetConfig.updateData {
     it.copy(isLocal = isLocal)
+  }
+
+  TimetableAppWidget().updateAll(this)
+}
+
+suspend fun Context.updateShowFreePeriods(showFreePeriods: Boolean) {
+  this.widgetConfig.updateData {
+    it.copy(showFreePeriods = showFreePeriods)
   }
 
   TimetableAppWidget().updateAll(this)

@@ -76,7 +76,7 @@ class TimetableAppWidget : GlanceAppWidget() {
       val timetable = store.data.map {
         val file = context.openFileInput("${it.file?.removeSuffix(".json")}.json")
         val timetable = Json.decodeFromStream<Timetable>(file)
-        buildTimetableDisplay(it.day ?: TODAY, timetable)
+        buildTimetableDisplay(it.day ?: TODAY, timetable, it.showFreePeriods)
       }.stateIn(this)
 
       val work = PeriodicWorkRequestBuilder<UpdateWorker>(30, TimeUnit.MINUTES)
@@ -111,19 +111,17 @@ object Sizes {
 }
 
 @Composable
-fun TimetableWidget(day: String, isLockedNow: Boolean, times: List<TimetableDisplayEntry>) {
+fun TimetableWidget(day: String, locked: Boolean, entries: List<TimetableDisplayEntry>) {
   val textStyle = TextStyle(color = GlanceTheme.colors.onSurface)
 
   GlanceTheme {
     Scaffold(
-      titleBar = @Composable {
-        TitleBar(day, isLockedNow)
-      },
+      titleBar = { TitleBar(day, locked) },
       backgroundColor = GlanceTheme.colors.background,
       modifier = GlanceModifier.padding(bottom = 12.dp),
     ) {
       Box(GlanceModifier.appWidgetInnerCornerRadius(12.dp)) {
-        if (times.isEmpty()) {
+        if (entries.isEmpty()) {
           Box(
             GlanceModifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -132,7 +130,7 @@ fun TimetableWidget(day: String, isLockedNow: Boolean, times: List<TimetableDisp
           }
         } else {
           LazyColumn {
-            items(times) { time ->
+            items(entries) { time ->
               val padding = when (time.end) {
                 6 -> 0.dp
                 else -> 4.dp

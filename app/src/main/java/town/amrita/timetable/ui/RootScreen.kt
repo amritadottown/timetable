@@ -40,7 +40,7 @@ import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import town.amrita.timetable.R
 
 data object RegistryRoute
-data object AboutRoute
+data object SettingsRoute
 
 val LocalGlobalActions = staticCompositionLocalOf<@Composable (RowScope.() -> Unit)> { {  } }
 
@@ -63,8 +63,8 @@ fun RootScreen() {
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
           DropdownMenuItem(
-            text = { Text("About") },
-            onClick = { backStack.add(AboutRoute) }
+            text = { Text("Settings") },
+            onClick = { backStack.add(SettingsRoute) }
           )
         }
       }
@@ -85,8 +85,8 @@ fun RootScreen() {
           entry<RegistryRoute> {
             TimetablePickerScreen()
           }
-          entry<AboutRoute> {
-            AboutScreen()
+          entry<SettingsRoute> {
+            SettingsScreen()
           }
         },
         transitionSpec = {

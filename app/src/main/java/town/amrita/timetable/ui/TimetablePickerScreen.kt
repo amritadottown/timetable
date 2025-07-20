@@ -22,8 +22,8 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -32,6 +32,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.GlanceAppWidgetManager
@@ -41,6 +44,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -48,6 +52,8 @@ import retrofit2.await
 import town.amrita.timetable.activity.LocalWidgetId
 import town.amrita.timetable.models.Timetable
 import town.amrita.timetable.models.TimetableSpec
+import town.amrita.timetable.models.WidgetConfig
+import town.amrita.timetable.models.widgetConfig
 import town.amrita.timetable.registry.RegistryService
 import town.amrita.timetable.registry.RegistryYears
 import town.amrita.timetable.ui.components.DropdownPicker
@@ -71,7 +77,6 @@ fun TimetablePickerScreen(
   val context = LocalContext.current
   val state by viewModel.state.collectAsStateWithLifecycle()
 
-
   val launcher =
     rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
       Log.d("Timetable", uri?.toString() ?: "no uri")
@@ -81,7 +86,7 @@ fun TimetablePickerScreen(
       }
     }
 
-  var selectedTab by remember { mutableIntStateOf(0) }
+  val selectedTab = listOf(TimetablePickerSource.Registry, TimetablePickerSource.Local).indexOf(state.source)
 
   var timetableSelected by remember { mutableStateOf(false) }
   var timetable by remember { mutableStateOf<Timetable?>(null) }
@@ -126,12 +131,12 @@ fun TimetablePickerScreen(
       SecondaryTabRow(selectedTabIndex = selectedTab, containerColor = Color.Transparent) {
         Tab(
           selected = state.source == TimetablePickerSource.Registry,
-          onClick = { selectedTab = 0; viewModel.sourceChanged(TimetablePickerSource.Registry) },
+          onClick = { viewModel.sourceChanged(TimetablePickerSource.Registry) },
           text = { Text("Online") }
         )
         Tab(
           selected = state.source == TimetablePickerSource.Local,
-          onClick = { selectedTab = 1; viewModel.sourceChanged(TimetablePickerSource.Local) },
+          onClick = { viewModel.sourceChanged(TimetablePickerSource.Local) },
           text = { Text("Local") }
         )
       }
@@ -327,18 +332,17 @@ class RegistryScreenViewModel : ViewModel() {
 
   fun fixRegistryState(s: RegistryPickerState): RegistryPickerState {
     val newSections = registryYears[s.currentYear] ?: emptyMap()
-    val newSection =
-      if (newSections.containsKey(s.currentSection))
-        s.currentSection
-      else
-        null
+    val newSection = when(s.currentSection) {
+      in newSections -> s.currentSection
+      else -> null
+    }
 
     val newSemesters = newSections[newSection]?.toSet() ?: setOf()
-    val newSemester =
-      if (newSemesters.contains(s.currentSemester))
-        s.currentSemester
-      else
-        null
+    val newSemester = when {
+      s.currentSemester in newSemesters -> s.currentSemester
+      !newSemesters.isEmpty() -> newSemesters.last()
+      else -> null
+    }
 
     return s.copy(
       sections = newSections.keys,

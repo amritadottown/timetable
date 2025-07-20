@@ -3,14 +3,16 @@ package town.amrita.timetable.ui
 import android.app.Activity
 import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.safeGestures
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -60,52 +62,42 @@ fun DateSwitcher() {
     ModalBottomSheet(
       onDismissRequest = { (context as? Activity)?.finish() },
       sheetState = rememberModalBottomSheetState(true),
-      contentWindowInsets = { WindowInsets(bottom = 12.dp) },
+      contentWindowInsets = { WindowInsets.safeDrawing }
     ) {
-      LazyColumn(
-        Modifier.padding(
-          top = 0.dp,
-          bottom = 36.dp,
-          start = 12.dp,
-          end = 12.dp
-        )
-      ) {
-        item {
+      Column(Modifier.padding(start = 24.dp, end = 12.dp)) {
+        Row(
+          Modifier
+            .fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Text(style = MaterialTheme.typography.titleLarge, text = "Day")
           Row(
-            Modifier
-              .fillMaxWidth()
-              .padding(start = 12.dp, end = 0.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
           ) {
-            Text(style = MaterialTheme.typography.titleLarge, text = "Day")
-            Row(
-              horizontalArrangement = Arrangement.spacedBy(8.dp),
-              verticalAlignment = Alignment.CenterVertically
-            ) {
-              Text("Lock")
-              Switch(
-                checked = isLocked,
-                onCheckedChange = {
-                  scope.launch {
-                    context.updateLock(it)
-                  }
+            Text("Lock")
+            Switch(
+              checked = isLocked,
+              onCheckedChange = {
+                scope.launch {
+                  context.updateLock(it)
                 }
-              )
-
-              IconButton(onClick = {
-                val intent = Intent(context, MainActivity::class.java)
-                context.startActivity(intent)
-              }) {
-                Icon(
-                  painter = painterResource(R.drawable.settings_24px),
-                  contentDescription = "Settings"
-                )
               }
+            )
+
+            IconButton(onClick = {
+              val intent = Intent(context, MainActivity::class.java)
+              context.startActivity(intent)
+            }) {
+              Icon(
+                painter = painterResource(R.drawable.settings_24px),
+                contentDescription = "Settings"
+              )
             }
           }
         }
-        items(items = DAYS) { day ->
+        DAYS.map { day ->
           TextButton(modifier = Modifier.fillMaxWidth(), onClick = {
             scope.launch {
               context.updateDay(day)
@@ -127,7 +119,6 @@ fun DateSwitcher() {
           }
         }
       }
-
     }
   }
 }

@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import town.amrita.timetable.ui.DateSwitcher
+import town.amrita.timetable.ui.TimetableTheme
 
 class DateSwitcherActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -12,7 +13,9 @@ class DateSwitcherActivity : ComponentActivity() {
     enableEdgeToEdge()
 
     setContent {
-      DateSwitcher()
+      TimetableTheme {
+        DateSwitcher()
+      }
     }
   }
 }
