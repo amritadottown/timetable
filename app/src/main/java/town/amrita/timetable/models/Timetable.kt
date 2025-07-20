@@ -81,7 +81,7 @@ fun buildTimetableDisplay(day: String, timetable: Timetable, showFreePeriods: Bo
     val isLab = x.endsWith("_LAB")
 
     val subject = when (name) {
-      "FREE" -> if (showFreePeriods) FREE_SUBJECT else break
+      "FREE" -> FREE_SUBJECT
       in timetable.subjects -> timetable.subjects[name] ?: UNKNOWN_SUBJECT
       else -> UNKNOWN_SUBJECT
     }
@@ -102,16 +102,17 @@ fun buildTimetableDisplay(day: String, timetable: Timetable, showFreePeriods: Bo
       }
     else timetable.slots[i]
 
-    times.add(
-      TimetableDisplayEntry(
-        subject.name,
-        subject.shortName,
-        slot,
-        i,
-        i + offset - 1,
-        isLab
+    if(!(showFreePeriods && subject == FREE_SUBJECT))
+      times.add(
+        TimetableDisplayEntry(
+          subject.name,
+          subject.shortName,
+          slot,
+          i,
+          i + offset - 1,
+          isLab
+        )
       )
-    )
 
     i += offset
   }
