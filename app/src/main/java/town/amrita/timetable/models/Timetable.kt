@@ -102,7 +102,7 @@ fun buildTimetableDisplay(day: String, timetable: Timetable, showFreePeriods: Bo
       }
     else timetable.slots[i]
 
-    if(!(showFreePeriods && subject == FREE_SUBJECT))
+    if(showFreePeriods || subject != FREE_SUBJECT)
       times.add(
         TimetableDisplayEntry(
           subject.name,

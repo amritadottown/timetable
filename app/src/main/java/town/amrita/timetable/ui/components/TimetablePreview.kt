@@ -33,6 +33,7 @@ import town.amrita.timetable.models.TimetableDisplayEntry
 import town.amrita.timetable.models.WidgetConfig
 import town.amrita.timetable.models.buildTimetableDisplay
 import town.amrita.timetable.models.widgetConfig
+import town.amrita.timetable.ui.LocalTimetableColors
 import town.amrita.timetable.utils.DAYS
 import town.amrita.timetable.utils.TODAY
 
@@ -78,12 +79,13 @@ fun TimetablePreview(modifier: Modifier = Modifier, timetable: Timetable?) {
 
 @Composable
 private fun TimetableItem(item: TimetableDisplayEntry) {
+
   with(item) {
     Card(
       Modifier.fillMaxWidth(),
       shape = MaterialTheme.shapes.medium,
       colors = CardDefaults.cardColors()
-        .copy(containerColor = MaterialTheme.colorScheme.onSecondary)
+        .copy(containerColor = LocalTimetableColors.current.behindTimetableItem)
     ) {
       Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
