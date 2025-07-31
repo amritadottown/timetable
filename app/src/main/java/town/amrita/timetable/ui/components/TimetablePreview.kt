@@ -104,7 +104,7 @@ private fun TimetableItem(item: TimetableDisplayEntry) {
             "Period ${if (start == end) start + 1 else "${start + 1} → ${end + 1}"}",
           )
           Text("•")
-          Text(slot)
+          Text(slot.toString())
         }
       }
     }

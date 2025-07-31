@@ -1,5 +1,6 @@
 package town.amrita.timetable.widget
 
+import android.app.AlarmManager
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -10,7 +11,6 @@ import town.amrita.timetable.models.widgetConfig
 import town.amrita.timetable.utils.TODAY
 import town.amrita.timetable.utils.updateTimetableFromRegistry
 import java.time.Instant
-
 
 class UpdateWorker(context: Context, workParams: WorkerParameters) :
   CoroutineWorker(context, workParams) {

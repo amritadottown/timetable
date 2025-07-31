@@ -61,6 +61,7 @@ import town.amrita.timetable.utils.TODAY
 import town.amrita.timetable.widget.Sizes.BEEG
 import town.amrita.timetable.widget.Sizes.SMOL
 import java.time.Instant
+import java.time.LocalTime
 import java.util.concurrent.TimeUnit
 
 class TimetableWidgetReceiver : GlanceAppWidgetReceiver() {
@@ -192,19 +193,24 @@ fun TitleBar(day: String, locked: Boolean) {
 
 @Composable
 fun TimetableItem(item: TimetableDisplayEntry) {
-  val textStyle = TextStyle(color = GlanceTheme.colors.onSurface)
-  val strongTextStyle =
-    TextStyle(color = GlanceTheme.colors.onSurface, fontWeight = FontWeight.Medium)
 
   val isBeeg = LocalSize.current.width >= BEEG.width
 
+
   with(item) {
+    val isActive = item.slot.containsTime(LocalTime.now())
+    val backgroundColor = if (isActive) GlanceTheme.colors.primary else GlanceTheme.colors.widgetBackground
+    val textColor = if (isActive) GlanceTheme.colors.onPrimary else GlanceTheme.colors.onSurface
+    val textStyle = TextStyle(color = textColor)
+    val strongTextStyle =
+      TextStyle(color = textColor, fontWeight = FontWeight.Medium)
+
     Box(
       GlanceModifier
         .fillMaxWidth()
         .padding(horizontal = 14.dp, vertical = 8.dp)
         .appWidgetInnerCornerRadius(12.dp)
-        .background(GlanceTheme.colors.widgetBackground)
+        .background(backgroundColor)
     ) {
       Column {
         Row(verticalAlignment = Alignment.Vertical.CenterVertically) {
@@ -229,7 +235,7 @@ fun TimetableItem(item: TimetableDisplayEntry) {
               style = textStyle,
               modifier = GlanceModifier.padding(horizontal = 6.dp)
             )
-            Text(slot, style = textStyle)
+            Text(slot.toString(), style = textStyle)
           }
         }
       }
