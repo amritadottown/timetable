@@ -1,10 +1,15 @@
 package town.amrita.timetable.ui
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.os.SystemClock
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -24,6 +29,7 @@ import town.amrita.timetable.models.WidgetConfig
 import town.amrita.timetable.models.updateShowFreePeriods
 import town.amrita.timetable.models.widgetConfig
 import town.amrita.timetable.ui.components.TimetableScaffold
+import town.amrita.timetable.widget.AlarmReceiver
 
 @Composable
 fun SettingsScreen() {
@@ -68,6 +74,25 @@ fun SettingsScreen() {
           }
         )
         Text("More stuff here soon I guess")
+        if (BuildConfig.DEBUG) {
+          Button(onClick = {
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val intent = Intent(context, AlarmReceiver::class.java)
+            val pendingIntent = PendingIntent.getBroadcast(
+              context,
+              0,
+              intent,
+              PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+            )
+            alarmManager.setExactAndAllowWhileIdle(
+              AlarmManager.ELAPSED_REALTIME_WAKEUP,
+              SystemClock.elapsedRealtime() + 5000,
+              pendingIntent
+            )
+          }) {
+            Text("Test widget update alarm")
+          }
+        }
       }
     }
   }

@@ -3,10 +3,12 @@ package town.amrita.timetable.models
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonIgnoreUnknownKeys
-import java.lang.IllegalStateException
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
+@JsonIgnoreUnknownKeys
 data class Timetable(
   val subjects: HashMap<String, Subject>,
   val schedule: HashMap<String, Array<String>>
@@ -19,7 +21,7 @@ val SLOTS: List<TimetableSlot> = listOf(
   TimetableSlot(LocalTime.of(11, 0), LocalTime.of(11, 50)),
   TimetableSlot(LocalTime.of(11, 50), LocalTime.of(12, 40)),
   TimetableSlot(LocalTime.of(14, 0), LocalTime.of(14, 50)),
-  TimetableSlot(LocalTime.of(14, 50), LocalTime.of(15, 40))
+  TimetableSlot(LocalTime.of(14, 50), LocalTime.of(15, 40)),
 )
 
 val LAB_SLOTS: List<TimetableSlot> = listOf(
@@ -28,13 +30,22 @@ val LAB_SLOTS: List<TimetableSlot> = listOf(
   TimetableSlot(LocalTime.of(13, 25), LocalTime.of(15, 40))
 )
 
+val UPDATE_TIMES: List<LocalTime> = (SLOTS + LAB_SLOTS).map { it.start } + listOf(
+  LocalTime.of(10, 25),
+  LocalTime.of(10, 40),
+  LocalTime.of(12, 40),
+  LocalTime.of(13, 5),
+  LocalTime.of(15, 40)
+).sorted()
+
 data class TimetableSlot(val start: LocalTime, val end: LocalTime) {
   fun containsTime(time: LocalTime): Boolean {
     return start.isBefore(time) && end.isAfter(time)
   }
 
   override fun toString(): String {
-    return "${start.hour}:${start.minute.toString().padStart(2, '0')}-${end.hour}:${end.minute.toString().padStart(2, '0')}"
+    val formatter = DateTimeFormatter.ofPattern("h:mm")
+    return "${formatter.format(start)}-${formatter.format(end)}"
   }
 }
 
@@ -79,10 +90,14 @@ data class TimetableDisplayEntry(
   val lab: Boolean
 )
 
-val FREE_SUBJECT = Subject("Free", "", "")
+val FREE_SUBJECT = Subject("Free", "", "", "FREE")
 val UNKNOWN_SUBJECT = Subject("⚠️ Unknown", "", "")
 
-fun buildTimetableDisplay(day: String, timetable: Timetable, showFreePeriods: Boolean = true): List<TimetableDisplayEntry> {
+fun buildTimetableDisplay(
+  day: String,
+  timetable: Timetable,
+  showFreePeriods: Boolean = true
+): List<TimetableDisplayEntry> {
   if (!timetable.schedule.containsKey(day))
     return emptyList()
 
@@ -115,7 +130,7 @@ fun buildTimetableDisplay(day: String, timetable: Timetable, showFreePeriods: Bo
       }
     else SLOTS[i]
 
-    if(showFreePeriods || subject != FREE_SUBJECT)
+    if (showFreePeriods || subject != FREE_SUBJECT)
       times.add(
         TimetableDisplayEntry(
           subject.name,

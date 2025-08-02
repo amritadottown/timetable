@@ -7,5 +7,3 @@ val DAYS = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Satur
 
 val TODAY: String
   get() = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE"))
-
-

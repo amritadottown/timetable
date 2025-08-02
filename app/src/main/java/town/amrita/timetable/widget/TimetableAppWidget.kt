@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastFirstOrNull
 import androidx.glance.ColorFilter
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
@@ -41,9 +42,6 @@ import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -62,7 +60,6 @@ import town.amrita.timetable.widget.Sizes.BEEG
 import town.amrita.timetable.widget.Sizes.SMOL
 import java.time.Instant
 import java.time.LocalTime
-import java.util.concurrent.TimeUnit
 
 class TimetableWidgetReceiver : GlanceAppWidgetReceiver() {
   override val glanceAppWidget: GlanceAppWidget = TimetableAppWidget()
@@ -80,11 +77,7 @@ class TimetableAppWidget : GlanceAppWidget() {
         buildTimetableDisplay(it.day ?: TODAY, timetable, it.showFreePeriods)
       }.stateIn(this)
 
-      val work = PeriodicWorkRequestBuilder<UpdateWorker>(30, TimeUnit.MINUTES)
-        .build()
-
-      WorkManager.getInstance(context)
-        .enqueueUniquePeriodicWork("TIMETABLE_UPDATE_WORKER", ExistingPeriodicWorkPolicy.KEEP, work)
+      context.ensureWorkAndAlarms()
 
       provideContent {
         val data by store.data.collectAsState(initial)
@@ -98,7 +91,16 @@ class TimetableAppWidget : GlanceAppWidget() {
             else false
           }
 
-        TimetableWidget(day, isLockedNow, times)
+        val currentPeriod = times.fastFirstOrNull { it.slot.containsTime(LocalTime.now()) }
+        val nextPeriod = currentPeriod?.let {
+          val nextIndex = times.indexOf(currentPeriod) + 1
+          when (nextIndex) {
+            times.size -> null
+            else -> times[nextIndex]
+          }
+        }
+
+        TimetableWidget(day, isLockedNow, times, currentPeriod?.shortName, nextPeriod?.shortName)
       }
     }
   }
@@ -112,12 +114,18 @@ object Sizes {
 }
 
 @Composable
-fun TimetableWidget(day: String, locked: Boolean, entries: List<TimetableDisplayEntry>) {
+fun TimetableWidget(
+  day: String,
+  locked: Boolean,
+  entries: List<TimetableDisplayEntry>,
+  current: String? = null,
+  next: String? = null
+) {
   val textStyle = TextStyle(color = GlanceTheme.colors.onSurface)
 
   GlanceTheme {
     Scaffold(
-      titleBar = { TitleBar(day, locked) },
+      titleBar = { TitleBar(day, locked, current, next) },
       backgroundColor = GlanceTheme.colors.background,
       modifier = GlanceModifier.padding(bottom = 12.dp),
     ) {
@@ -149,7 +157,9 @@ fun TimetableWidget(day: String, locked: Boolean, entries: List<TimetableDisplay
 }
 
 @Composable
-fun TitleBar(day: String, locked: Boolean) {
+fun TitleBar(day: String, locked: Boolean, current: String? = null, next: String? = null) {
+  val textStyle =
+    TextStyle(color = GlanceTheme.colors.onSurface)
   val strongTextStyle =
     TextStyle(color = GlanceTheme.colors.onSurface, fontWeight = FontWeight.Medium)
 
@@ -187,6 +197,21 @@ fun TitleBar(day: String, locked: Boolean) {
           colorFilter = ColorFilter.tint(GlanceTheme.colors.onSurface)
         )
       }
+
+      if (LocalSize.current.width >= BEEG.width && (current != null || next != null)) {
+        val currentNextString = when {
+          current != null && next != null -> "Now $current, next $next"
+          current != null -> "Now $current"
+          next != null -> "Next $next"
+          else -> ""
+        }
+        Text(
+          "•",
+          style = textStyle,
+          modifier = GlanceModifier.padding(horizontal = 6.dp)
+        )
+        Text(currentNextString, style = textStyle)
+      }
     }
   }
 }
@@ -196,14 +221,17 @@ fun TimetableItem(item: TimetableDisplayEntry) {
 
   val isBeeg = LocalSize.current.width >= BEEG.width
 
-
   with(item) {
     val isActive = item.slot.containsTime(LocalTime.now())
-    val backgroundColor = if (isActive) GlanceTheme.colors.primary else GlanceTheme.colors.widgetBackground
+
+    val backgroundColor =
+      if (isActive) GlanceTheme.colors.primary else GlanceTheme.colors.widgetBackground
     val textColor = if (isActive) GlanceTheme.colors.onPrimary else GlanceTheme.colors.onSurface
     val textStyle = TextStyle(color = textColor)
     val strongTextStyle =
       TextStyle(color = textColor, fontWeight = FontWeight.Medium)
+
+    val iconColor = if (isActive) GlanceTheme.colors.onPrimary else GlanceTheme.colors.primary
 
     Box(
       GlanceModifier
@@ -220,7 +248,7 @@ fun TimetableItem(item: TimetableDisplayEntry) {
             Image(
               provider = ImageProvider(R.drawable.science_24px),
               contentDescription = "Lab",
-              colorFilter = ColorFilter.tint(GlanceTheme.colors.primary)
+              colorFilter = ColorFilter.tint(iconColor)
             )
           }
         }

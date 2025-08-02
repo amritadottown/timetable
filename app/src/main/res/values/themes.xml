@@ -3,7 +3,6 @@
 
     <style name="Theme.Timetable" parent="android:Theme.Material.Light.NoActionBar" />
 
-    <style name="Theme.DateSwitcher" parent="android:Theme.DeviceDefault.Panel">
-    </style>
+    <style name="Theme.DateSwitcher" parent="android:Theme.DeviceDefault.Panel" />
 
 </resources>
