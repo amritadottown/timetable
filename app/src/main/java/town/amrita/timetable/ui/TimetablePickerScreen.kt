@@ -22,7 +22,6 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,9 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.LinkAnnotation
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withLink
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.GlanceAppWidgetManager
@@ -44,7 +41,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -52,8 +48,7 @@ import retrofit2.await
 import town.amrita.timetable.activity.LocalWidgetId
 import town.amrita.timetable.models.Timetable
 import town.amrita.timetable.models.TimetableSpec
-import town.amrita.timetable.models.WidgetConfig
-import town.amrita.timetable.models.widgetConfig
+import town.amrita.timetable.models.validateSchedule
 import town.amrita.timetable.registry.RegistryService
 import town.amrita.timetable.registry.RegistryYears
 import town.amrita.timetable.ui.components.DropdownPicker
@@ -86,10 +81,13 @@ fun TimetablePickerScreen(
       }
     }
 
-  val selectedTab = listOf(TimetablePickerSource.Registry, TimetablePickerSource.Local).indexOf(state.source)
+  val selectedTab =
+    listOf(TimetablePickerSource.Registry, TimetablePickerSource.Local).indexOf(state.source)
 
   var timetableSelected by remember { mutableStateOf(false) }
   var timetable by remember { mutableStateOf<Timetable?>(null) }
+  val validationResult =
+    remember(timetable) { timetable?.let { validateSchedule(it) } ?: emptyList() }
 
   val widgetId = LocalWidgetId.current
 
@@ -196,11 +194,20 @@ fun TimetablePickerScreen(
       }
 
       if (timetableSelected) {
-        TimetablePreview(
-          Modifier
-            .weight(1f)
-            .fillMaxSize(), timetable = timetable
-        )
+        if (validationResult.isEmpty()) {
+          TimetablePreview(
+            Modifier
+              .weight(1f)
+              .fillMaxSize(), timetable = timetable
+          )
+        } else {
+          Column(Modifier.weight(1f).fillMaxSize()) {
+            Text(text = "⚠️ Errors found", fontWeight = FontWeight.Medium)
+            validationResult.map {
+              Text(it)
+            }
+          }
+        }
       } else {
         Spacer(
           Modifier
@@ -211,7 +218,7 @@ fun TimetablePickerScreen(
 
       Button(
         modifier = Modifier.fillMaxWidth(),
-        enabled = timetableSelected,
+        enabled = timetableSelected && validationResult.isEmpty(),
         onClick = {
           scope.launch {
             when (state.source) {
@@ -332,7 +339,7 @@ class RegistryScreenViewModel : ViewModel() {
 
   fun fixRegistryState(s: RegistryPickerState): RegistryPickerState {
     val newSections = registryYears[s.currentYear] ?: emptyMap()
-    val newSection = when(s.currentSection) {
+    val newSection = when (s.currentSection) {
       in newSections -> s.currentSection
       else -> null
     }

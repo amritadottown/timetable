@@ -30,6 +30,48 @@ val LAB_SLOTS: List<TimetableSlot> = listOf(
   TimetableSlot(LocalTime.of(13, 25), LocalTime.of(15, 40))
 )
 
+fun validateSchedule(timetable: Timetable): List<String> {
+  val errors = mutableListOf<String>()
+
+  for ((day, daySchedule) in timetable.schedule) {
+    var totalSlots = 0
+
+    for (entry in daySchedule) {
+      if (entry == "FREE") {
+        totalSlots += 1
+        continue
+      }
+
+      val name = entry.removeSuffix("_LAB")
+      val isLab = entry.endsWith("_LAB")
+
+      if (name !in timetable.subjects) {
+        errors.add("$day: Subject \"$name\" not found in subjects")
+      }
+
+      if (isLab && totalSlots !in listOf(0, 3, 5)) {
+        errors.add("$day: LAB entry \"$entry\" can only be in slots 0, 3, or 5 (found in slot $totalSlots)")
+      }
+
+      val offset = if (isLab)
+        when (totalSlots) {
+          0 -> 3
+          else -> 2
+        }
+      else 1
+
+      totalSlots += offset
+    }
+
+    if (totalSlots != 7) {
+      errors.add("$day: Total slots should be 7, got $totalSlots")
+    }
+  }
+
+  return errors
+}
+
+
 val UPDATE_TIMES: List<LocalTime> = (SLOTS + LAB_SLOTS).map { it.start } + listOf(
   LocalTime.of(10, 25),
   LocalTime.of(10, 40),
