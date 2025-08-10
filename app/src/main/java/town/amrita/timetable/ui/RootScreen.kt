@@ -42,7 +42,7 @@ import town.amrita.timetable.R
 data object RegistryRoute
 data object SettingsRoute
 
-val LocalGlobalActions = staticCompositionLocalOf<@Composable (RowScope.() -> Unit)> { {  } }
+val LocalGlobalActions = staticCompositionLocalOf<@Composable (RowScope.() -> Unit)> { { } }
 
 @Composable
 fun RootScreen() {
@@ -64,7 +64,11 @@ fun RootScreen() {
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
           DropdownMenuItem(
             text = { Text("Settings") },
-            onClick = { backStack.add(SettingsRoute) }
+            onClick = {
+              expanded = false
+              if (backStack.last() != SettingsRoute)
+                backStack.add(SettingsRoute)
+            }
           )
         }
       }

@@ -23,6 +23,7 @@ import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.SizeMode
+import androidx.glance.appwidget.action.actionSendBroadcast
 import androidx.glance.appwidget.components.Scaffold
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.lazy.LazyColumn
@@ -38,6 +39,7 @@ import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
+import androidx.glance.layout.size
 import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
@@ -55,6 +57,7 @@ import town.amrita.timetable.models.Timetable
 import town.amrita.timetable.models.TimetableDisplayEntry
 import town.amrita.timetable.models.buildTimetableDisplay
 import town.amrita.timetable.models.widgetConfig
+import town.amrita.timetable.utils.DAYS
 import town.amrita.timetable.utils.TODAY
 import town.amrita.timetable.widget.Sizes.BEEG
 import town.amrita.timetable.widget.Sizes.SMOL
@@ -74,15 +77,27 @@ class TimetableAppWidget : GlanceAppWidget() {
       val timetable = store.data.map {
         val file = context.openFileInput("${it.file?.removeSuffix(".json")}.json")
         val timetable = Json.decodeFromStream<Timetable>(file)
-        buildTimetableDisplay(it.day ?: TODAY, timetable, it.showFreePeriods)
+        val dayToShow =
+          when (it.day) {
+            null -> {
+              if (LocalTime.now().isBefore(initial.showNextDayAt))
+                TODAY
+              else
+                DAYS[(DAYS.indexOf(TODAY) + 1) % DAYS.size]
+            }
+
+            else -> it.day
+          }
+        Pair(dayToShow, buildTimetableDisplay(dayToShow, timetable, it.showFreePeriods))
       }.stateIn(this)
 
       context.ensureWorkAndAlarms()
 
       provideContent {
         val data by store.data.collectAsState(initial)
-        val day = data.day ?: TODAY
-        val times by timetable.collectAsState()
+        val timetableState by timetable.collectAsState()
+        val day = timetableState.first
+        val times = timetableState.second
 
         val isLockedNow =
           with(data.lockedUntil) {
@@ -168,14 +183,15 @@ fun TitleBar(day: String, locked: Boolean, current: String? = null, next: String
       verticalAlignment = Alignment.CenterVertically,
       modifier = GlanceModifier
         .fillMaxWidth()
-        .padding(horizontal = 16.dp, vertical = 14.dp)
+        .height(48.dp)
+        .padding(start = 16.dp)
         .clickable(actionStartActivity<DateSwitcherActivity>())
     ) {
       Box(
         contentAlignment = Alignment.Center,
         modifier = GlanceModifier
           .background(GlanceTheme.colors.primary)
-          .width(24.dp).height(24.dp)
+          .size(24.dp)
           .cornerRadius(12.dp)
       ) {
         Image(
@@ -211,6 +227,22 @@ fun TitleBar(day: String, locked: Boolean, current: String? = null, next: String
           modifier = GlanceModifier.padding(horizontal = 6.dp)
         )
         Text(currentNextString, style = textStyle)
+      }
+
+
+      Spacer(GlanceModifier.defaultWeight())
+      Box(
+        contentAlignment = Alignment.Center,
+        modifier = GlanceModifier
+          .size(48.dp)
+          .clickable(actionSendBroadcast<AlarmReceiver>())
+      ) {
+        Image(
+          modifier = GlanceModifier.size(24.dp),
+          provider = ImageProvider(R.drawable.refresh_24px),
+          contentDescription = "Refresh",
+          colorFilter = ColorFilter.tint(GlanceTheme.colors.onSurface)
+        )
       }
     }
   }

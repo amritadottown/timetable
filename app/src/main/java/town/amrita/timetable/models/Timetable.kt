@@ -10,8 +10,8 @@ import java.time.format.DateTimeFormatter
 @Serializable
 @JsonIgnoreUnknownKeys
 data class Timetable(
-  val subjects: HashMap<String, Subject>,
-  val schedule: HashMap<String, Array<String>>
+  val subjects: Map<String, Subject>,
+  val schedule: Map<String, List<String>>
 )
 
 val SLOTS: List<TimetableSlot> = listOf(
@@ -72,17 +72,19 @@ fun validateSchedule(timetable: Timetable): List<String> {
 }
 
 
-val UPDATE_TIMES: List<LocalTime> = (SLOTS + LAB_SLOTS).map { it.start } + listOf(
-  LocalTime.of(10, 25),
-  LocalTime.of(10, 40),
-  LocalTime.of(12, 40),
-  LocalTime.of(13, 5),
-  LocalTime.of(15, 40)
-).sorted()
+val UPDATE_TIMES: List<LocalTime>
+  get() =
+    ((SLOTS + LAB_SLOTS).map { it.start } + listOf(
+      LocalTime.of(10, 25),
+      LocalTime.of(10, 40),
+      LocalTime.of(12, 40),
+      LocalTime.of(13, 5),
+      LocalTime.of(15, 40)
+    )).sorted()
 
 data class TimetableSlot(val start: LocalTime, val end: LocalTime) {
   fun containsTime(time: LocalTime): Boolean {
-    return start.isBefore(time) && end.isAfter(time)
+    return start <= time && time < end
   }
 
   override fun toString(): String {
@@ -133,7 +135,7 @@ data class TimetableDisplayEntry(
 )
 
 val FREE_SUBJECT = Subject("Free", "", "", "FREE")
-val UNKNOWN_SUBJECT = Subject("⚠️ Unknown", "", "")
+val UNKNOWN_SUBJECT = Subject("⚠️ Unknown", "", "", "⚠️ UNK")
 
 fun buildTimetableDisplay(
   day: String,
@@ -146,7 +148,7 @@ fun buildTimetableDisplay(
   val times: MutableList<TimetableDisplayEntry> = mutableListOf()
   var i = 0
 
-  for (x in timetable.schedule[day] ?: arrayOf()) {
+  for (x in timetable.schedule[day] ?: listOf()) {
     val name = x.removeSuffix("_LAB")
     val isLab = x.endsWith("_LAB")
 
