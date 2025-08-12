@@ -117,5 +117,5 @@ suspend fun Context.ensureWorkAndAlarms() {
     .build()
 
   WorkManager.getInstance(this)
-    .enqueueUniquePeriodicWork("TIMETABLE_UPDATE_WORKER", ExistingPeriodicWorkPolicy.REPLACE, work)
+    .enqueueUniquePeriodicWork("TIMETABLE_UPDATE_WORKER", ExistingPeriodicWorkPolicy.KEEP, work)
 }
