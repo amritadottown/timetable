@@ -54,28 +54,30 @@ fun RootScreen() {
     val pxValue = with(LocalDensity.current) { 96.dp.roundToPx() }
 
     val globalActions: @Composable (RowScope.() -> Unit) = {
-      var expanded by remember { mutableStateOf(false) }
-      Box {
-        IconButton(onClick = {
-          expanded = !expanded
-        }) {
-          Icon(painter = painterResource(R.drawable.more_vert_24px), contentDescription = "More")
-        }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-          DropdownMenuItem(
-            text = { Text("Settings") },
-            onClick = {
-              expanded = false
-              if (backStack.last() != SettingsRoute)
-                backStack.add(SettingsRoute)
-            }
-          )
+      if (backStack.last() == RegistryRoute) {
+        var expanded by remember { mutableStateOf(false) }
+        Box {
+          IconButton(onClick = { expanded = !expanded }) {
+            Icon(
+              painter = painterResource(R.drawable.more_vert_24px),
+              contentDescription = "More"
+            )
+          }
+          DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+              text = { Text("Settings") },
+              onClick = {
+                expanded = false
+                if (backStack.last() != SettingsRoute)
+                  backStack.add(SettingsRoute)
+              }
+            )
+          }
         }
       }
     }
 
     CompositionLocalProvider(LocalGlobalActions provides globalActions) {
-
       NavDisplay(
         modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer),
         backStack = backStack,
