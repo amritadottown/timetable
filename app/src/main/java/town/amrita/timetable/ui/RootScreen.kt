@@ -46,103 +46,105 @@ val LocalGlobalActions = staticCompositionLocalOf<@Composable (RowScope.() -> Un
 
 @Composable
 fun RootScreen() {
-  TimetableTheme {
-    val backStack = remember { mutableStateListOf<Any>(RegistryRoute) }
-    val thingy =
-      PathInterpolator(PathParser.createPathFromPathData("M 0,0 C 0.05, 0, 0.133333, 0.06, 0.166666, 0.4 C 0.208333, 0.82, 0.25, 1, 1, 1"))
-    val materialEasing = Easing { thingy.getInterpolation(it) }
-    val pxValue = with(LocalDensity.current) { 96.dp.roundToPx() }
+    TimetableTheme {
+        val backStack = remember { mutableStateListOf<Any>(RegistryRoute) }
+        val thingy =
+            PathInterpolator(PathParser.createPathFromPathData("M 0,0 C 0.05, 0, 0.133333, 0.06, 0.166666, 0.4 C 0.208333, 0.82, 0.25, 1, 1, 1"))
+        val materialEasing = Easing { thingy.getInterpolation(it) }
+        val pxValue = with(LocalDensity.current) { 96.dp.roundToPx() }
 
-    val globalActions: @Composable (RowScope.() -> Unit) = {
-      var expanded by remember { mutableStateOf(false) }
-      Box {
-        IconButton(onClick = {
-          expanded = !expanded
-        }) {
-          Icon(painter = painterResource(R.drawable.more_vert_24px), contentDescription = "More")
-        }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-          DropdownMenuItem(
-            text = { Text("Settings") },
-            onClick = {
-              expanded = false
-              if (backStack.last() != SettingsRoute)
-                backStack.add(SettingsRoute)
+        // Updated globalActions: only shows 3-dot button on home page
+        val globalActions: @Composable (RowScope.() -> Unit) = {
+            if (backStack.last() == RegistryRoute) {
+                var expanded by remember { mutableStateOf(false) }
+                Box {
+                    IconButton(onClick = {
+                        expanded = !expanded
+                    }) {
+                        Icon(painter = painterResource(R.drawable.more_vert_24px), contentDescription = "More")
+                    }
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        DropdownMenuItem(
+                            text = { Text("Settings") },
+                            onClick = {
+                                expanded = false
+                                if (backStack.last() != SettingsRoute)
+                                    backStack.add(SettingsRoute)
+                            }
+                        )
+                    }
+                }
             }
-          )
         }
-      }
-    }
 
-    CompositionLocalProvider(LocalGlobalActions provides globalActions) {
+        CompositionLocalProvider(LocalGlobalActions provides globalActions) {
 
-      NavDisplay(
-        modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer),
-        backStack = backStack,
-        onBack = { backStack.removeLastOrNull() },
-        entryDecorators = listOf(
-          rememberSceneSetupNavEntryDecorator(),
-          rememberSavedStateNavEntryDecorator(),
-          rememberViewModelStoreNavEntryDecorator()
-        ),
-        entryProvider = entryProvider {
-          entry<RegistryRoute> {
-            TimetablePickerScreen()
-          }
-          entry<SettingsRoute> {
-            SettingsScreen()
-          }
-        },
-        transitionSpec = {
-          ContentTransform(
-            slideIn(
-              animationSpec = tween(
-                durationMillis = 450,
-                easing = materialEasing
-              )
-            ) { _ -> IntOffset(pxValue, 0) },
-            fadeOut(
-              animationSpec = tween(
-                durationMillis = 83,
-                easing = LinearEasing,
-                delayMillis = 50
-              )
+            NavDisplay(
+                modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer),
+                backStack = backStack,
+                onBack = { backStack.removeLastOrNull() },
+                entryDecorators = listOf(
+                    rememberSceneSetupNavEntryDecorator(),
+                    rememberSavedStateNavEntryDecorator(),
+                    rememberViewModelStoreNavEntryDecorator()
+                ),
+                entryProvider = entryProvider {
+                    entry<RegistryRoute> {
+                        TimetablePickerScreen()
+                    }
+                    entry<SettingsRoute> {
+                        SettingsScreen()
+                    }
+                },
+                transitionSpec = {
+                    ContentTransform(
+                        slideIn(
+                            animationSpec = tween(
+                                durationMillis = 450,
+                                easing = materialEasing
+                            )
+                        ) { _ -> IntOffset(pxValue, 0) },
+                        fadeOut(
+                            animationSpec = tween(
+                                durationMillis = 83,
+                                easing = LinearEasing,
+                                delayMillis = 50
+                            )
+                        )
+                                + slideOut(
+                            animationSpec = tween(
+                                durationMillis = 450,
+                                easing = materialEasing
+                            )
+                        ) { _ -> IntOffset(-pxValue, 0) },
+                        -1f
+                    )
+                },
+                popTransitionSpec = {
+                    ContentTransform(
+                        slideIn(
+                            animationSpec = tween(
+                                durationMillis = 450,
+                                easing = materialEasing
+                            )
+                        ) { _ -> IntOffset(-pxValue, 0) },
+                        fadeOut(
+                            animationSpec = tween(
+                                durationMillis = 83,
+                                easing = LinearEasing,
+                                delayMillis = 35
+                            )
+                        )
+                                + slideOut(
+                            animationSpec = tween(
+                                durationMillis = 450,
+                                easing = materialEasing
+                            )
+                        ) { _ -> IntOffset(pxValue, 0) },
+                        -1f
+                    )
+                },
             )
-                    + slideOut(
-              animationSpec = tween(
-                durationMillis = 450,
-                easing = materialEasing
-              )
-            ) { _ -> IntOffset(-pxValue, 0) },
-            -1f
-          )
-        },
-        popTransitionSpec = {
-          ContentTransform(
-            slideIn(
-              animationSpec = tween(
-                durationMillis = 450,
-                easing = materialEasing
-              )
-            ) { _ -> IntOffset(-pxValue, 0) },
-            fadeOut(
-              animationSpec = tween(
-                durationMillis = 83,
-                easing = LinearEasing,
-                delayMillis = 35
-              )
-            )
-                    + slideOut(
-              animationSpec = tween(
-                durationMillis = 450,
-                easing = materialEasing
-              )
-            ) { _ -> IntOffset(pxValue, 0) },
-            -1f
-          )
-        },
-//        predictivePopTransitionSpec =
-      )
+        }
     }
-  }
 }
