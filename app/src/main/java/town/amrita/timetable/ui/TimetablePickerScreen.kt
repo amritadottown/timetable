@@ -103,7 +103,12 @@ fun TimetablePickerScreen(
             registryState.currentSection,
             registryState.currentSemester
           )
-          timetable = RegistryService.instance.getTimetable(newSpec).await()
+          try {
+            timetable = RegistryService.instance.getTimetable(newSpec).await()
+          } catch (e: Exception) {
+            Log.d("Timetable", "Failed to fetch timetable: $e")
+            viewModel.setRegistryTimetableError("Failed to load timetable: ${e.message}")
+          }
         } else {
           timetableSelected = false
         }
@@ -112,8 +117,13 @@ fun TimetablePickerScreen(
       TimetablePickerSource.Local -> {
         timetableSelected = false
         state.localPickerState.fileUri?.let {
-          timetable = context.getFileContent(it)
-          timetableSelected = true
+          try {
+            timetable = context.getFileContent(it)
+            timetableSelected = true
+          } catch (e: Exception) {
+            Log.d("Timetable", "Failed to read local file: $e")
+            viewModel.setLocalTimetableError("Failed to read file: ${e.message}")
+          }
         }
       }
     }
@@ -143,22 +153,35 @@ fun TimetablePickerScreen(
         TimetablePickerSource.Registry -> {
           with(state.registryState) {
             if (ready) {
-              Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                DropdownPicker(
-                  options = years.toList(),
-                  selected = currentYear,
-                  label = "Start Year",
-                  onSelectionChanged = { viewModel.yearChanged(it) })
-                DropdownPicker(
-                  options = sections.toList(),
-                  selected = currentSection,
-                  label = "Section",
-                  onSelectionChanged = { viewModel.sectionChanged(it) })
-                DropdownPicker(
-                  options = semesters.toList(),
-                  selected = currentSemester,
-                  label = "Semester",
-                  onSelectionChanged = { viewModel.semesterChanged(it) })
+              if (indexError != null) {
+                Column(
+                  verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                  Text("⚠️ Error: $indexError")
+                  Button(
+                    onClick = { viewModel.retryIndexLoad() }
+                  ) {
+                    Text("Retry")
+                  }
+                }
+              } else {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                  DropdownPicker(
+                    options = years.toList(),
+                    selected = currentYear,
+                    label = "Start Year",
+                    onSelectionChanged = { viewModel.yearChanged(it) })
+                  DropdownPicker(
+                    options = sections.toList(),
+                    selected = currentSection,
+                    label = "Section",
+                    onSelectionChanged = { viewModel.sectionChanged(it) })
+                  DropdownPicker(
+                    options = semesters.toList(),
+                    selected = currentSemester,
+                    label = "Semester",
+                    onSelectionChanged = { viewModel.semesterChanged(it) })
+                }
               }
             } else {
               Column(
@@ -194,7 +217,24 @@ fun TimetablePickerScreen(
       }
 
       if (timetableSelected) {
-        if (validationResult.isEmpty()) {
+        val currentTimetableError = when (state.source) {
+          TimetablePickerSource.Registry -> state.registryState.timetableError
+          TimetablePickerSource.Local -> state.localPickerState.timetableError
+        }
+        
+        if (currentTimetableError != null) {
+          Column(
+            Modifier.weight(1f).fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+          ) {
+            Text("⚠️ Error: $currentTimetableError")
+            Button(
+              onClick = { viewModel.retryTimetableLoad() }
+            ) {
+              Text("Retry")
+            }
+          }
+        } else if (validationResult.isEmpty()) {
           TimetablePreview(
             Modifier
               .weight(1f)
@@ -218,49 +258,59 @@ fun TimetablePickerScreen(
 
       Button(
         modifier = Modifier.fillMaxWidth(),
-        enabled = timetableSelected && validationResult.isEmpty(),
+        enabled = timetableSelected && validationResult.isEmpty() && 
+                 state.registryState.timetableError == null && 
+                 state.localPickerState.timetableError == null,
         onClick = {
           scope.launch {
-            when (state.source) {
-              TimetablePickerSource.Registry -> {
-                val registryState = state.registryState
-                if (registryState.currentYear != null && registryState.currentSection != null && registryState.currentSemester != null) {
-                  val newSpec = TimetableSpec(
-                    registryState.currentYear,
-                    registryState.currentSection,
-                    registryState.currentSemester
-                  )
-                  context.updateTimetableFromRegistry(newSpec)
+            try {
+              when (state.source) {
+                TimetablePickerSource.Registry -> {
+                  val registryState = state.registryState
+                  if (registryState.currentYear != null && registryState.currentSection != null && registryState.currentSemester != null) {
+                    val newSpec = TimetableSpec(
+                      registryState.currentYear,
+                      registryState.currentSection,
+                      registryState.currentSemester
+                    )
+                    context.updateTimetableFromRegistry(newSpec)
+                  }
+                }
+
+                TimetablePickerSource.Local -> {
+                  state.localPickerState.fileUri?.let { context.updateTimetableFromUri(it) }
                 }
               }
 
-              TimetablePickerSource.Local -> {
-                state.localPickerState.fileUri?.let { context.updateTimetableFromUri(it) }
-              }
-            }
-
-            if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-              val activity = context as ComponentActivity
-              activity.finish()
-            } else {
-              val appWidgetManager = GlanceAppWidgetManager(context)
-              if (appWidgetManager.getGlanceIds(TimetableAppWidget::class.java).isEmpty()) {
-                if (!appWidgetManager.requestPinGlanceAppWidget(
-                    TimetableWidgetReceiver::class.java,
-                    TimetableAppWidget(), Sizes.BEEG
-                  )
-                ) {
+              if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+                val activity = context as ComponentActivity
+                activity.finish()
+              } else {
+                val appWidgetManager = GlanceAppWidgetManager(context)
+                if (appWidgetManager.getGlanceIds(TimetableAppWidget::class.java).isEmpty()) {
+                  if (!appWidgetManager.requestPinGlanceAppWidget(
+                      TimetableWidgetReceiver::class.java,
+                      TimetableAppWidget(), Sizes.BEEG
+                    )
+                  ) {
+                    snackbarHostState.showSnackbar(
+                      message = "Timetable updated. Place the Timetable widget on your home screen to see it.",
+                      withDismissAction = true
+                    )
+                  }
+                } else {
                   snackbarHostState.showSnackbar(
-                    message = "Timetable updated. Place the Timetable widget on your home screen to see it.",
+                    message = "Timetable updated",
                     withDismissAction = true
                   )
                 }
-              } else {
-                snackbarHostState.showSnackbar(
-                  message = "Timetable updated",
-                  withDismissAction = true
-                )
               }
+            } catch (e: Exception) {
+              Log.d("Timetable", "Error using timetable: $e")
+              snackbarHostState.showSnackbar(
+                message = "Error updating timetable. Please try again.",
+                withDismissAction = true
+              )
             }
           }
         }) {
@@ -288,12 +338,15 @@ data class RegistryPickerState(
   val sections: Set<String> = setOf(),
   val currentSection: String? = null,
   val semesters: Set<String> = setOf(),
-  val currentSemester: String? = null
+  val currentSemester: String? = null,
+  val indexError: String? = null,
+  val timetableError: String? = null
 )
 
 data class LocalPickerState(
   val fileUri: Uri? = null,
-  val fileName: String? = null
+  val fileName: String? = null,
+  val timetableError: String? = null
 )
 
 
@@ -311,12 +364,21 @@ class RegistryScreenViewModel : ViewModel() {
           e.copy(
             registryState = e.registryState.copy(
               years = registryYears.keys,
-              ready = true
+              ready = true,
+              indexError = null
             )
           )
         }
       } catch (e: Exception) {
         Log.d("Timetable", e.toString())
+        _state.update { s ->
+          s.copy(
+            registryState = s.registryState.copy(
+              ready = true,
+              indexError = "Failed to load timetable index: ${e.message}"
+            )
+          )
+        }
       }
     }
   }
@@ -326,15 +388,15 @@ class RegistryScreenViewModel : ViewModel() {
   }
 
   fun yearChanged(newValue: String?) {
-    _state.update { it.copy(registryState = fixRegistryState(it.registryState.copy(currentYear = newValue))) }
+    _state.update { it.copy(registryState = fixRegistryState(it.registryState.copy(currentYear = newValue, timetableError = null))) }
   }
 
   fun semesterChanged(newValue: String?) {
-    _state.update { it.copy(registryState = fixRegistryState(it.registryState.copy(currentSemester = newValue))) }
+    _state.update { it.copy(registryState = fixRegistryState(it.registryState.copy(currentSemester = newValue, timetableError = null))) }
   }
 
   fun sectionChanged(newValue: String?) {
-    _state.update { it.copy(registryState = fixRegistryState(it.registryState.copy(currentSection = newValue))) }
+    _state.update { it.copy(registryState = fixRegistryState(it.registryState.copy(currentSection = newValue, timetableError = null))) }
   }
 
   fun fixRegistryState(s: RegistryPickerState): RegistryPickerState {
@@ -364,9 +426,80 @@ class RegistryScreenViewModel : ViewModel() {
       it.copy(
         localPickerState = it.localPickerState.copy(
           fileUri = newUri,
-          fileName = newName
+          fileName = newName,
+          timetableError = null
         )
       )
+    }
+  }
+
+  fun setRegistryTimetableError(error: String) {
+    _state.update {
+      it.copy(
+        registryState = it.registryState.copy(timetableError = error)
+      )
+    }
+  }
+
+  fun setLocalTimetableError(error: String) {
+    _state.update {
+      it.copy(
+        localPickerState = it.localPickerState.copy(timetableError = error)
+      )
+    }
+  }
+
+  fun retryIndexLoad() {
+    _state.update {
+      it.copy(
+        registryState = it.registryState.copy(
+          ready = false,
+          indexError = null
+        )
+      )
+    }
+    viewModelScope.launch {
+      try {
+        registryYears = RegistryService.instance.getRegistry().await().timetables
+        _state.update { e ->
+          e.copy(
+            registryState = e.registryState.copy(
+              years = registryYears.keys,
+              ready = true,
+              indexError = null
+            )
+          )
+        }
+      } catch (e: Exception) {
+        Log.d("Timetable", e.toString())
+        _state.update { s ->
+          s.copy(
+            registryState = s.registryState.copy(
+              ready = true,
+              indexError = "Failed to load timetable index: ${e.message}"
+            )
+          )
+        }
+      }
+    }
+  }
+
+  fun retryTimetableLoad() {
+    when (_state.value.source) {
+      TimetablePickerSource.Registry -> {
+        _state.update {
+          it.copy(
+            registryState = it.registryState.copy(timetableError = null)
+          )
+        }
+      }
+      TimetablePickerSource.Local -> {
+        _state.update {
+          it.copy(
+            localPickerState = it.localPickerState.copy(timetableError = null)
+          )
+        }
+      }
     }
   }
 }
