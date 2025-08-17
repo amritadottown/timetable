@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import androidx.compose.ui.util.fastFirst
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -38,9 +39,10 @@ class AlarmReceiver : BroadcastReceiver() {
       try {
         context.ensureWorkAndAlarms()
         val work =
-          OneTimeWorkRequestBuilder<WidgetUpdateWorker>()
-            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-            .build()
+          OneTimeWorkRequestBuilder<WidgetUpdateWorker>().apply {
+            if (Build.VERSION.SDK_INT >= 31)
+              this.setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+          }.build()
         WorkManager.getInstance(context).enqueue(work)
       } finally {
         pending.finish()
