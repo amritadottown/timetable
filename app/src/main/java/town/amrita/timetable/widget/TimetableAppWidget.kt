@@ -96,8 +96,7 @@ class TimetableAppWidget : GlanceAppWidget() {
       provideContent {
         val data by store.data.collectAsState(initial)
         val timetableState by timetable.collectAsState()
-        val day = timetableState.first
-        val times = timetableState.second
+        val (day, times) = timetableState
 
         val isLockedNow =
           with(data.lockedUntil) {
@@ -107,12 +106,10 @@ class TimetableAppWidget : GlanceAppWidget() {
           }
 
         val currentPeriod = times.fastFirstOrNull { it.slot.containsTime(LocalTime.now()) }
-        val nextPeriod = currentPeriod?.let {
-          val nextIndex = times.indexOf(currentPeriod) + 1
-          when (nextIndex) {
-            times.size -> null
-            else -> times[nextIndex]
-          }
+        val nextPeriod = when {
+          LocalTime.now() < times.first().slot.start -> null
+          LocalTime.now() >= times.last().slot.start -> null
+          else -> times.fastFirstOrNull { LocalTime.now() < it.slot.start }
         }
 
         TimetableWidget(day, isLockedNow, times, currentPeriod?.shortName, nextPeriod?.shortName)
