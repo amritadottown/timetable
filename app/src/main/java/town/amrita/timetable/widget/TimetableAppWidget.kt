@@ -107,6 +107,7 @@ class TimetableAppWidget : GlanceAppWidget() {
 
         val currentPeriod = times.fastFirstOrNull { it.slot.containsTime(LocalTime.now()) }
         val nextPeriod = when {
+          times.isEmpty() -> null
           LocalTime.now() < times.first().slot.start -> null
           LocalTime.now() >= times.last().slot.start -> null
           else -> times.fastFirstOrNull { LocalTime.now() < it.slot.start }
