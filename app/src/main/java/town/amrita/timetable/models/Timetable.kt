@@ -3,7 +3,6 @@ package town.amrita.timetable.models
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonIgnoreUnknownKeys
-import town.amrita.timetable.utils.DAYS
 import town.amrita.timetable.utils.DayOfWeekSerializer
 import town.amrita.timetable.utils.longName
 import java.time.DayOfWeek
@@ -144,13 +143,15 @@ val UNKNOWN_SUBJECT = Subject("⚠️ Unknown", "", "", "⚠️ UNK")
 fun buildTimetableDisplay(
   day: DayOfWeek,
   timetable: Timetable,
-  showFreePeriods: Boolean = true
+  showFreePeriods: Boolean = true,
+  showCompletedPeriods: Boolean = true
 ): List<TimetableDisplayEntry> {
   if (!timetable.schedule.containsKey(day))
     return emptyList()
 
   val times: MutableList<TimetableDisplayEntry> = mutableListOf()
   var i = 0
+  val now = LocalTime.now()
 
   for (x in timetable.schedule[day] ?: listOf()) {
     val name = x.removeSuffix("_LAB")
@@ -178,7 +179,7 @@ fun buildTimetableDisplay(
       }
     else SLOTS[i]
 
-    if (showFreePeriods || subject != FREE_SUBJECT)
+    if ((showFreePeriods || subject != FREE_SUBJECT) && (showCompletedPeriods || slot.end > now))
       times.add(
         TimetableDisplayEntry(
           subject.name,

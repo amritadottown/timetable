@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import town.amrita.timetable.BuildConfig
 import town.amrita.timetable.models.WidgetConfig
+import town.amrita.timetable.models.updateShowCompletedPeriods
 import town.amrita.timetable.models.updateShowFreePeriods
 import town.amrita.timetable.models.updateShowNextDayAt
 import town.amrita.timetable.models.widgetConfig
@@ -67,6 +68,22 @@ fun SettingsScreen() {
           onCheckedChange = {
             scope.launch {
               context.updateShowFreePeriods(it)
+            }
+          }
+        )
+      }
+
+      Row(
+        Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+      ) {
+        Text("Show Completed Periods")
+        Switch(
+          settings.showCompletedPeriods,
+          onCheckedChange = {
+            scope.launch {
+              context.updateShowCompletedPeriods(it)
             }
           }
         )

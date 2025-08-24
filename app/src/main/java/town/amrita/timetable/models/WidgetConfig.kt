@@ -29,6 +29,7 @@ data class WidgetConfig(
   val electiveChoices: Map<String, String> = emptyMap(),
   val lockedUntil: Long? = null,
   val showFreePeriods: Boolean = true,
+  val showCompletedPeriods: Boolean = true,
 
   @Serializable(with = LocalTimeSerializer::class)
   val showNextDayAt: LocalTime = LocalTime.of(23, 59)
@@ -96,6 +97,14 @@ suspend fun Context.updateIsLocal(isLocal: Boolean) {
 suspend fun Context.updateShowFreePeriods(showFreePeriods: Boolean) {
   this.widgetConfig.updateData {
     it.copy(showFreePeriods = showFreePeriods)
+  }
+
+  TimetableAppWidget().updateAll(this)
+}
+
+suspend fun Context.updateShowCompletedPeriods(showCompletedPeriods: Boolean) {
+  this.widgetConfig.updateData {
+    it.copy(showCompletedPeriods = showCompletedPeriods)
   }
 
   TimetableAppWidget().updateAll(this)
