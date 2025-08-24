@@ -3,6 +3,10 @@ package town.amrita.timetable.models
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonIgnoreUnknownKeys
+import town.amrita.timetable.utils.DAYS
+import town.amrita.timetable.utils.DayOfWeekSerializer
+import town.amrita.timetable.utils.longName
+import java.time.DayOfWeek
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -11,7 +15,7 @@ import java.time.format.DateTimeFormatter
 @JsonIgnoreUnknownKeys
 data class Timetable(
   val subjects: Map<String, Subject>,
-  val schedule: Map<String, List<String>>
+  val schedule: Map<@Serializable(with = DayOfWeekSerializer::class) DayOfWeek, List<String>>
 )
 
 val SLOTS: List<TimetableSlot> = listOf(
@@ -46,11 +50,11 @@ fun validateSchedule(timetable: Timetable): List<String> {
       val isLab = entry.endsWith("_LAB")
 
       if (name !in timetable.subjects) {
-        errors.add("$day: Subject \"$name\" not found in subjects")
+        errors.add("${day.longName()}: Subject \"$name\" not found in subjects")
       }
 
       if (isLab && totalSlots !in listOf(0, 3, 5)) {
-        errors.add("$day: LAB entry \"$entry\" can only be in slots 0, 3, or 5 (found in slot $totalSlots)")
+        errors.add("${day.longName()}: LAB entry \"$entry\" can only be in slots 0, 3, or 5 (found in slot $totalSlots)")
       }
 
       val offset = if (isLab)
@@ -64,7 +68,7 @@ fun validateSchedule(timetable: Timetable): List<String> {
     }
 
     if (totalSlots != 7) {
-      errors.add("$day: Total slots should be 7, got $totalSlots")
+      errors.add("${day.longName()}: Total slots should be 7, got $totalSlots")
     }
   }
 
@@ -100,7 +104,7 @@ data class Subject(
   val name: String,
   val code: String,
   val faculty: String,
-  val shortName: String = name.split(" ").map({ e -> e[0] }).filter({ e -> e.isUpperCase() })
+  val shortName: String = name.split(" ").map{ e -> e[0] }.filter({ e -> e.isUpperCase() })
     .joinToString(separator = "")
 )
 
@@ -138,7 +142,7 @@ val FREE_SUBJECT = Subject("Free", "", "", "FREE")
 val UNKNOWN_SUBJECT = Subject("⚠️ Unknown", "", "", "⚠️ UNK")
 
 fun buildTimetableDisplay(
-  day: String,
+  day: DayOfWeek,
   timetable: Timetable,
   showFreePeriods: Boolean = true
 ): List<TimetableDisplayEntry> {

@@ -39,6 +39,7 @@ import town.amrita.timetable.models.updateLock
 import town.amrita.timetable.models.widgetConfig
 import town.amrita.timetable.utils.DAYS
 import town.amrita.timetable.utils.TODAY
+import town.amrita.timetable.utils.longName
 import java.time.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -103,7 +104,7 @@ fun DateSwitcher() {
           }) {
             Row(verticalAlignment = Alignment.CenterVertically) {
               Text(
-                day,
+                day.longName(),
                 style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface)
               )
               if (day == TODAY) {

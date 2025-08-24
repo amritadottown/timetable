@@ -59,8 +59,11 @@ import town.amrita.timetable.models.buildTimetableDisplay
 import town.amrita.timetable.models.widgetConfig
 import town.amrita.timetable.utils.DAYS
 import town.amrita.timetable.utils.TODAY
+import town.amrita.timetable.utils.longName
+import town.amrita.timetable.utils.shortName
 import town.amrita.timetable.widget.Sizes.BEEG
 import town.amrita.timetable.widget.Sizes.SMOL
+import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalTime
 
@@ -83,12 +86,12 @@ class TimetableAppWidget : GlanceAppWidget() {
               if (LocalTime.now().isBefore(initial.showNextDayAt))
                 TODAY
               else
-                DAYS[(DAYS.indexOf(TODAY) + 1) % DAYS.size]
+                TODAY.plus(1)
             }
 
             else -> it.day
           }
-        Pair(dayToShow, buildTimetableDisplay(dayToShow, timetable, it.showFreePeriods))
+        Pair(dayToShow, buildTimetableDisplay(dayToShow, timetable, it.showFreePeriods, it.showCompletedPeriods))
       }.stateIn(this)
 
       context.ensureWorkAndAlarms()
@@ -128,7 +131,7 @@ object Sizes {
 
 @Composable
 fun TimetableWidget(
-  day: String,
+  day: DayOfWeek,
   locked: Boolean,
   entries: List<TimetableDisplayEntry>,
   current: String? = null,
@@ -170,11 +173,13 @@ fun TimetableWidget(
 }
 
 @Composable
-fun TitleBar(day: String, locked: Boolean, current: String? = null, next: String? = null) {
+fun TitleBar(day: DayOfWeek, locked: Boolean, current: String? = null, next: String? = null) {
   val textStyle =
     TextStyle(color = GlanceTheme.colors.onSurface)
   val strongTextStyle =
     TextStyle(color = GlanceTheme.colors.onSurface, fontWeight = FontWeight.Medium)
+
+  val isBeeg = LocalSize.current.width >= BEEG.width
 
   Column {
     Row(
@@ -200,7 +205,7 @@ fun TitleBar(day: String, locked: Boolean, current: String? = null, next: String
       }
       Spacer(GlanceModifier.width(8.dp))
       Text(
-        day,
+        if (isBeeg) day.longName() else day.shortName(),
         style = strongTextStyle
       )
       if (locked) {
@@ -212,7 +217,7 @@ fun TitleBar(day: String, locked: Boolean, current: String? = null, next: String
         )
       }
 
-      if (LocalSize.current.width >= BEEG.width && (current != null || next != null)) {
+      if (isBeeg && (current != null || next != null)) {
         val currentNextString = when {
           current != null && next != null -> "Now $current, next $next"
           current != null -> "Now $current"

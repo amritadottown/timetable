@@ -14,6 +14,7 @@ import town.amrita.timetable.widget.TimetableAppWidget
 import town.amrita.timetable.widget.ensureWorkAndAlarms
 import java.io.InputStream
 import java.io.OutputStream
+import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -22,7 +23,7 @@ import java.time.temporal.ChronoUnit
 
 @Serializable
 data class WidgetConfig(
-  val day: String? = null,
+  val day: DayOfWeek? = null,
   val isLocal: Boolean = true,
   val file: String? = null,
   val electiveChoices: Map<String, String> = emptyMap(),
@@ -52,7 +53,7 @@ val Context.widgetConfig by dataStore(
   serializer = WidgetConfigSerializer
 )
 
-suspend fun Context.updateDay(day: String?) {
+suspend fun Context.updateDay(day: DayOfWeek?) {
   this.widgetConfig.updateData {
     it.copy(day = day)
   }
