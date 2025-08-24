@@ -122,6 +122,7 @@ fun TimetablePickerScreen(
             timetableSelected = true
           } catch (e: Exception) {
             Log.d("Timetable", "Failed to read local file: $e")
+            timetableSelected = true
             viewModel.setLocalTimetableError("Failed to read file: ${e.message}")
           }
         }
@@ -203,6 +204,7 @@ fun TimetablePickerScreen(
               horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
               FilledTonalButton(onClick = {
+                viewModel.localUriChanged(null, null)
                 launcher.launch(arrayOf("application/json"))
               }) {
                 Text("Pick File")
@@ -234,19 +236,19 @@ fun TimetablePickerScreen(
               Text("Retry")
             }
           }
-        } else if (validationResult.isEmpty()) {
-          TimetablePreview(
-            Modifier
-              .weight(1f)
-              .fillMaxSize(), timetable = timetable
-          )
-        } else {
+        } else if (!validationResult.isEmpty()) {
           Column(Modifier.weight(1f).fillMaxSize()) {
             Text(text = "⚠️ Errors found", fontWeight = FontWeight.Medium)
             validationResult.map {
               Text(it)
             }
           }
+        } else {
+          TimetablePreview(
+            Modifier
+              .weight(1f)
+              .fillMaxSize(), timetable = timetable
+          )
         }
       } else {
         Spacer(
@@ -421,7 +423,7 @@ class RegistryScreenViewModel : ViewModel() {
     )
   }
 
-  fun localUriChanged(newUri: Uri, newName: String) {
+  fun localUriChanged(newUri: Uri?, newName: String?) {
     _state.update {
       it.copy(
         localPickerState = it.localPickerState.copy(
