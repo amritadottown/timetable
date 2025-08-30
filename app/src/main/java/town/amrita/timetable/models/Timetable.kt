@@ -144,14 +144,12 @@ fun buildTimetableDisplay(
   day: DayOfWeek,
   timetable: Timetable,
   showFreePeriods: Boolean = true,
-  showCompletedPeriods: Boolean = true
 ): List<TimetableDisplayEntry> {
   if (!timetable.schedule.containsKey(day))
     return emptyList()
 
   val times: MutableList<TimetableDisplayEntry> = mutableListOf()
   var i = 0
-  val now = LocalTime.now()
 
   for (x in timetable.schedule[day] ?: listOf()) {
     val name = x.removeSuffix("_LAB")
@@ -179,7 +177,7 @@ fun buildTimetableDisplay(
       }
     else SLOTS[i]
 
-    if ((showFreePeriods || subject != FREE_SUBJECT) && (showCompletedPeriods || slot.end > now))
+    if (showFreePeriods || subject != FREE_SUBJECT)
       times.add(
         TimetableDisplayEntry(
           subject.name,

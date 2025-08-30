@@ -57,7 +57,6 @@ import town.amrita.timetable.models.Timetable
 import town.amrita.timetable.models.TimetableDisplayEntry
 import town.amrita.timetable.models.buildTimetableDisplay
 import town.amrita.timetable.models.widgetConfig
-import town.amrita.timetable.utils.DAYS
 import town.amrita.timetable.utils.TODAY
 import town.amrita.timetable.utils.longName
 import town.amrita.timetable.utils.shortName
@@ -78,12 +77,13 @@ class TimetableAppWidget : GlanceAppWidget() {
       val store = context.widgetConfig
       val initial = store.data.first()
       val timetable = store.data.map {
-        val file = context.openFileInput("${it.file?.removeSuffix(".json")}.json")
-        val timetable = Json.decodeFromStream<Timetable>(file)
+        val timetable = context.openFileInput("${it.file?.removeSuffix(".json")}.json").use {
+          Json.decodeFromStream<Timetable>(it)
+        }
         val dayToShow =
           when (it.day) {
             null -> {
-              if (LocalTime.now().isBefore(initial.showNextDayAt))
+              if (LocalTime.now().isBefore(it.showNextDayAt))
                 TODAY
               else
                 TODAY.plus(1)
@@ -91,7 +91,7 @@ class TimetableAppWidget : GlanceAppWidget() {
 
             else -> it.day
           }
-        Pair(dayToShow, buildTimetableDisplay(dayToShow, timetable, it.showFreePeriods, it.showCompletedPeriods))
+        Pair(dayToShow, buildTimetableDisplay(dayToShow, timetable, it.showFreePeriods))
       }.stateIn(this)
 
       context.ensureWorkAndAlarms()
@@ -116,7 +116,15 @@ class TimetableAppWidget : GlanceAppWidget() {
           else -> times.fastFirstOrNull { LocalTime.now() < it.slot.start }
         }
 
-        TimetableWidget(day, isLockedNow, times, currentPeriod?.shortName, nextPeriod?.shortName)
+        TimetableWidget(
+          day,
+          isLockedNow,
+          if (!data.showCompletedPeriods && day == TODAY)
+            times.filter { it.slot.end > LocalTime.now() }
+          else times,
+          currentPeriod?.shortName,
+          nextPeriod?.shortName,
+        )
       }
     }
   }
@@ -135,7 +143,7 @@ fun TimetableWidget(
   locked: Boolean,
   entries: List<TimetableDisplayEntry>,
   current: String? = null,
-  next: String? = null
+  next: String? = null,
 ) {
   val textStyle = TextStyle(color = GlanceTheme.colors.onSurface)
 

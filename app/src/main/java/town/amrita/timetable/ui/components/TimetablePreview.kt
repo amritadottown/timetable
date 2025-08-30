@@ -55,7 +55,7 @@ fun TimetablePreview(modifier: Modifier = Modifier, timetable: Timetable?) {
         rememberPagerState(initialPage = initialPage) { timetable.schedule.keys.size }
       HorizontalPager(state = pagerState, pageSpacing = 8.dp) { page ->
         val day = DAYS[page]
-        val timetableDisplay = buildTimetableDisplay(day, timetable, config.value.showFreePeriods, config.value.showCompletedPeriods)
+        val timetableDisplay = buildTimetableDisplay(day, timetable, config.value.showFreePeriods)
         Column {
           Text(day.longName(), Modifier.padding(start = 4.dp, bottom = 12.dp), fontWeight = FontWeight.Medium)
           if (!timetableDisplay.isEmpty()) {
