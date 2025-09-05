@@ -2,6 +2,7 @@ package town.amrita.timetable.ui
 
 import android.app.Activity
 import android.content.Intent
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -101,6 +102,7 @@ fun DateSwitcher() {
             scope.launch {
               context.updateDay(day)
             }
+            (context as ComponentActivity).finish()
           }) {
             Row(verticalAlignment = Alignment.CenterVertically) {
               Text(
