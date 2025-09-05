@@ -20,6 +20,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -91,7 +92,7 @@ private fun TimetableItem(item: TimetableDisplayEntry) {
       Modifier.fillMaxWidth(),
       shape = MaterialTheme.shapes.medium,
       colors = CardDefaults.cardColors()
-        .copy(containerColor = LocalTimetableColors.current.behindTimetableItem)
+        .copy(containerColor = LocalTimetableColors.current.behindTimetableItem, contentColor = contentColorFor(LocalTimetableColors.current.behindTimetableItem))
     ) {
       Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
