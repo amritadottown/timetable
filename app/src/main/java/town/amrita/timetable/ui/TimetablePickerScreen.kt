@@ -14,12 +14,15 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -48,7 +51,9 @@ import retrofit2.await
 import town.amrita.timetable.activity.LocalWidgetId
 import town.amrita.timetable.models.Timetable
 import town.amrita.timetable.models.TimetableSpec
+import town.amrita.timetable.models.WidgetConfig
 import town.amrita.timetable.models.validateSchedule
+import town.amrita.timetable.models.widgetConfig
 import town.amrita.timetable.registry.RegistryService
 import town.amrita.timetable.registry.RegistryYears
 import town.amrita.timetable.ui.components.DropdownPicker
@@ -71,6 +76,7 @@ fun TimetablePickerScreen(
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
   val state by viewModel.state.collectAsStateWithLifecycle()
+  val currentWidgetConfig by context.widgetConfig.data.collectAsStateWithLifecycle(WidgetConfig())
 
   val launcher =
     rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -90,6 +96,29 @@ fun TimetablePickerScreen(
     remember(timetable) { timetable?.let { validateSchedule(it) } ?: emptyList() }
 
   val widgetId = LocalWidgetId.current
+  val isWidgetConfiguration = widgetId != AppWidgetManager.INVALID_APPWIDGET_ID
+  val hasExistingTimetable = currentWidgetConfig.file != null
+
+  var showUseCurrentDialog by remember { mutableStateOf(false) }
+
+  LaunchedEffect(isWidgetConfiguration, hasExistingTimetable) {
+    if (isWidgetConfiguration && hasExistingTimetable) {
+      showUseCurrentDialog = true
+    }
+  }
+
+  val currentTimetableSpec = currentWidgetConfig.file?.let { fileName ->
+    try {
+      if (currentWidgetConfig.isLocal) {
+        fileName.removeSuffix(".json")
+      } else {
+        val spec = TimetableSpec.fromString(fileName.removeSuffix(".json"))
+        "${spec.year}, ${spec.section}, ${spec.semester}"
+      }
+    } catch (e: Exception) {
+      fileName.removeSuffix(".json")
+    }
+  }
 
   LaunchedEffect(state.source, state.registryState, state.localPickerState) {
     when (state.source) {
@@ -134,6 +163,59 @@ fun TimetablePickerScreen(
     title = "Select Timetable"
   ) {
     val snackbarHostState = LocalSnackbarState.current
+
+    if (showUseCurrentDialog) {
+      AlertDialog(
+        onDismissRequest = { showUseCurrentDialog = false },
+        title = { Text("Use Current Timetable?") },
+        text = {
+          Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text("You have a timetable already configured:")
+            currentTimetableSpec?.let { spec ->
+              Text(
+                text = spec,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.primary
+              )
+            }
+            Text(
+              text = "Would you like to continue using it?",
+            )
+          }
+        },
+        confirmButton = {
+          TextButton(
+            onClick = {
+              scope.launch {
+                try {
+                  showUseCurrentDialog = false
+                  if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+                    val activity = context as ComponentActivity
+                    activity.finish()
+                  }
+                } catch (e: Exception) {
+                  Log.d("Timetable", "Error using existing timetable: $e")
+                  snackbarHostState.showSnackbar(
+                    message = "Error using existing timetable. Please try again.",
+                    withDismissAction = true
+                  )
+                }
+              }
+            }
+          ) {
+            Text("Use Current")
+          }
+        },
+        dismissButton = {
+          TextButton(
+            onClick = { showUseCurrentDialog = false }
+          ) {
+            Text("Choose Different")
+          }
+        }
+      )
+    }
 
     Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(24.dp)) {
 
