@@ -113,7 +113,7 @@ fun TimetablePickerScreen(
         fileName.removeSuffix(".json")
       } else {
         val spec = TimetableSpec.fromString(fileName.removeSuffix(".json"))
-        "${spec.year}, ${spec.section}, ${spec.semester}"
+        "Year ${spec.year}, section ${spec.section}, semester ${spec.semester}"
       }
     } catch (e: Exception) {
       fileName.removeSuffix(".json")
