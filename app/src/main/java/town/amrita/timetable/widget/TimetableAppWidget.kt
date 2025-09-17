@@ -142,7 +142,7 @@ class TimetableAppWidget : GlanceAppWidget() {
         TimetableWidget(
           day,
           isLockedNow,
-          if (!data.showCompletedPeriods && day == TODAY)
+          if (!data.showCompletedPeriods && (day == TODAY || isLockedNow))
             times.filter { it.slot.end > LocalTime.now() }
           else times,
           currentPeriod?.shortName,
