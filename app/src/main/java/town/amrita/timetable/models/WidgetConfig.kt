@@ -2,7 +2,6 @@ package town.amrita.timetable.models
 
 import android.content.Context
 import androidx.datastore.core.CorruptionException
-import androidx.datastore.core.DataMigration
 import androidx.datastore.core.Serializer
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import androidx.datastore.dataStore
@@ -15,10 +14,8 @@ import kotlinx.serialization.json.JsonIgnoreUnknownKeys
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
-import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import kotlinx.serialization.json.int
-import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import town.amrita.timetable.utils.LocalTimeSerializer
@@ -66,7 +63,7 @@ private object WidgetConfigSerializer : Serializer<WidgetConfig> {
         CONFIG_VERSION -> config
         else -> config.copy(version = CONFIG_VERSION)
       }
-    } catch(_: SerializationException) {
+    } catch (_: SerializationException) {
       try {
         val jsonElement = Json.parseToJsonElement(text)
         val json = jsonElement.jsonObject
@@ -77,12 +74,14 @@ private object WidgetConfigSerializer : Serializer<WidgetConfig> {
           // the last one of those (1.0.6) incorrectly deserializes day from int to DayOfWeek
           0 -> {
             val updated = json.toMutableMap().apply { this["day"] = JsonNull }
-            return Json.decodeFromJsonElement<WidgetConfig>(JsonObject(updated)).copy(version = CONFIG_VERSION)
+            return Json.decodeFromJsonElement<WidgetConfig>(JsonObject(updated))
+              .copy(version = CONFIG_VERSION)
           }
+
           else -> throw CorruptionException("Invalid configuration version")
         }
 
-      } catch(e: Exception) {
+      } catch (e: Exception) {
         throw CorruptionException("Could not parse config", e)
       }
     }

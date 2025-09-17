@@ -39,7 +39,6 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import town.amrita.timetable.BuildConfig
 import town.amrita.timetable.models.DEFAULT_CONFIG
-import town.amrita.timetable.models.WidgetConfig
 import town.amrita.timetable.models.updateShowCompletedPeriods
 import town.amrita.timetable.models.updateShowFreePeriods
 import town.amrita.timetable.models.updateShowNextDayAt
@@ -91,9 +90,11 @@ fun SettingsScreen() {
       }
 
       var showTimePicker by remember { mutableStateOf(false) }
-      Box(Modifier
-        .fillMaxWidth()
-        .clickable(onClick = { showTimePicker = true })) {
+      Box(
+        Modifier
+          .fillMaxWidth()
+          .clickable(onClick = { showTimePicker = true })
+      ) {
         Row(
           Modifier
             .fillMaxWidth()

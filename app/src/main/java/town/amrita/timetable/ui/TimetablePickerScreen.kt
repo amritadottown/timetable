@@ -305,10 +305,12 @@ fun TimetablePickerScreen(
           TimetablePickerSource.Registry -> state.registryState.timetableError
           TimetablePickerSource.Local -> state.localPickerState.timetableError
         }
-        
+
         if (currentTimetableError != null) {
           Column(
-            Modifier.weight(1f).fillMaxSize(),
+            Modifier
+              .weight(1f)
+              .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(8.dp)
           ) {
             Text("⚠️ Error: $currentTimetableError")
@@ -319,7 +321,9 @@ fun TimetablePickerScreen(
             }
           }
         } else if (!validationResult.isEmpty()) {
-          Column(Modifier.weight(1f).fillMaxSize()) {
+          Column(Modifier
+            .weight(1f)
+            .fillMaxSize()) {
             Text(text = "⚠️ Errors found", fontWeight = FontWeight.Medium)
             validationResult.map {
               Text(it)
@@ -342,9 +346,9 @@ fun TimetablePickerScreen(
 
       Button(
         modifier = Modifier.fillMaxWidth(),
-        enabled = timetableSelected && validationResult.isEmpty() && 
-                 state.registryState.timetableError == null && 
-                 state.localPickerState.timetableError == null,
+        enabled = timetableSelected && validationResult.isEmpty() &&
+                state.registryState.timetableError == null &&
+                state.localPickerState.timetableError == null,
         onClick = {
           scope.launch {
             try {
@@ -472,15 +476,42 @@ class RegistryScreenViewModel : ViewModel() {
   }
 
   fun yearChanged(newValue: String?) {
-    _state.update { it.copy(registryState = fixRegistryState(it.registryState.copy(currentYear = newValue, timetableError = null))) }
+    _state.update {
+      it.copy(
+        registryState = fixRegistryState(
+          it.registryState.copy(
+            currentYear = newValue,
+            timetableError = null
+          )
+        )
+      )
+    }
   }
 
   fun semesterChanged(newValue: String?) {
-    _state.update { it.copy(registryState = fixRegistryState(it.registryState.copy(currentSemester = newValue, timetableError = null))) }
+    _state.update {
+      it.copy(
+        registryState = fixRegistryState(
+          it.registryState.copy(
+            currentSemester = newValue,
+            timetableError = null
+          )
+        )
+      )
+    }
   }
 
   fun sectionChanged(newValue: String?) {
-    _state.update { it.copy(registryState = fixRegistryState(it.registryState.copy(currentSection = newValue, timetableError = null))) }
+    _state.update {
+      it.copy(
+        registryState = fixRegistryState(
+          it.registryState.copy(
+            currentSection = newValue,
+            timetableError = null
+          )
+        )
+      )
+    }
   }
 
   fun fixRegistryState(s: RegistryPickerState): RegistryPickerState {
@@ -577,6 +608,7 @@ class RegistryScreenViewModel : ViewModel() {
           )
         }
       }
+
       TimetablePickerSource.Local -> {
         _state.update {
           it.copy(

@@ -37,7 +37,6 @@ import town.amrita.timetable.R
 import town.amrita.timetable.models.DEFAULT_CONFIG
 import town.amrita.timetable.models.Timetable
 import town.amrita.timetable.models.TimetableDisplayEntry
-import town.amrita.timetable.models.WidgetConfig
 import town.amrita.timetable.models.buildTimetableDisplay
 import town.amrita.timetable.models.widgetConfig
 import town.amrita.timetable.ui.LocalTimetableColors
@@ -59,7 +58,11 @@ fun TimetablePreview(modifier: Modifier = Modifier, timetable: Timetable?) {
         val day = DAYS[page]
         val timetableDisplay = buildTimetableDisplay(day, timetable, config.value.showFreePeriods)
         Column {
-          Text(day.longName(), Modifier.padding(start = 4.dp, bottom = 12.dp), fontWeight = FontWeight.Medium)
+          Text(
+            day.longName(),
+            Modifier.padding(start = 4.dp, bottom = 12.dp),
+            fontWeight = FontWeight.Medium
+          )
           if (!timetableDisplay.isEmpty()) {
             Column(
               modifier = Modifier
@@ -93,7 +96,10 @@ private fun TimetableItem(item: TimetableDisplayEntry) {
       Modifier.fillMaxWidth(),
       shape = MaterialTheme.shapes.medium,
       colors = CardDefaults.cardColors()
-        .copy(containerColor = LocalTimetableColors.current.behindTimetableItem, contentColor = contentColorFor(LocalTimetableColors.current.behindTimetableItem))
+        .copy(
+          containerColor = LocalTimetableColors.current.behindTimetableItem,
+          contentColor = contentColorFor(LocalTimetableColors.current.behindTimetableItem)
+        )
     ) {
       Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -115,11 +121,11 @@ private fun TimetableItem(item: TimetableDisplayEntry) {
                     placeholderVerticalAlign = PlaceholderVerticalAlign.Center
                   )
                 ) {
-                    Icon(
-                      painter = painterResource(R.drawable.science_24px),
-                      contentDescription = "Lab",
-                      tint = MaterialTheme.colorScheme.primary
-                    )
+                  Icon(
+                    painter = painterResource(R.drawable.science_24px),
+                    contentDescription = "Lab",
+                    tint = MaterialTheme.colorScheme.primary
+                  )
                 })
             ), fontWeight = FontWeight.Medium
           )
