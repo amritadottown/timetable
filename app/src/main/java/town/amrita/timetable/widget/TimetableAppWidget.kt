@@ -1,6 +1,7 @@
 package town.amrita.timetable.widget
 
 import android.annotation.SuppressLint
+import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.os.Build
 import androidx.compose.runtime.Composable
@@ -10,6 +11,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastFirstOrNull
+import androidx.glance.Button
 import androidx.glance.ColorFilter
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
@@ -18,9 +20,12 @@ import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.LocalContext
 import androidx.glance.LocalSize
+import androidx.glance.action.ActionParameters
+import androidx.glance.action.actionParametersOf
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.action.actionSendBroadcast
@@ -53,6 +58,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import town.amrita.timetable.R
 import town.amrita.timetable.activity.DateSwitcherActivity
+import town.amrita.timetable.activity.MainActivity
 import town.amrita.timetable.models.Timetable
 import town.amrita.timetable.models.TimetableDisplayEntry
 import town.amrita.timetable.models.buildTimetableDisplay
@@ -77,7 +83,10 @@ class TimetableAppWidget : GlanceAppWidget() {
       val store = context.widgetConfig
       val initial = store.data.first()
       val timetable = store.data.map {
-        val timetable = context.openFileInput("${it.file?.removeSuffix(".json")}.json").use {
+        if (it.file == null)
+          return@map null
+
+        val timetable = context.openFileInput("${it.file.removeSuffix(".json")}.json").use {
           Json.decodeFromStream<Timetable>(it)
         }
         val dayToShow =
@@ -99,14 +108,28 @@ class TimetableAppWidget : GlanceAppWidget() {
       provideContent {
         val data by store.data.collectAsState(initial)
         val timetableState by timetable.collectAsState()
-        val (day, times) = timetableState
+        if (timetableState == null) {
+          GlanceTheme {
+            val textStyle = TextStyle(color = GlanceTheme.colors.onSurface)
+            Column(
+              modifier = GlanceModifier.fillMaxSize().background(GlanceTheme.colors.background),
+              horizontalAlignment = Alignment.CenterHorizontally,
+              verticalAlignment = Alignment.CenterVertically) {
+              Text("Timetable not configured", style = textStyle)
+              Spacer(GlanceModifier.height(4.dp))
+              Button(text = "Configure", onClick = actionStartActivity<MainActivity>(
+                actionParametersOf(
+                  ActionParameters.Key<Int>(AppWidgetManager.EXTRA_APPWIDGET_ID) to GlanceAppWidgetManager(context).getAppWidgetId(id)
+                )
+              ))
+            }
+          }
+          return@provideContent
+        }
+        val (day, times) = timetableState!!
 
         val isLockedNow =
-          with(data.lockedUntil) {
-            if (this != null)
-              Instant.ofEpochSecond(this).isAfter(Instant.now())
-            else false
-          }
+          with(data.lockedUntil) { this != null && Instant.ofEpochSecond(this).isAfter(Instant.now()) }
 
         val currentPeriod = times.fastFirstOrNull { it.slot.containsTime(LocalTime.now()) }
         val nextPeriod = when {

@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import town.amrita.timetable.R
+import town.amrita.timetable.models.DEFAULT_CONFIG
 import town.amrita.timetable.models.Timetable
 import town.amrita.timetable.models.TimetableDisplayEntry
 import town.amrita.timetable.models.WidgetConfig
@@ -47,7 +48,7 @@ import town.amrita.timetable.utils.longName
 @Composable
 fun TimetablePreview(modifier: Modifier = Modifier, timetable: Timetable?) {
   val context = LocalContext.current
-  val config = context.widgetConfig.data.collectAsState(WidgetConfig())
+  val config = context.widgetConfig.data.collectAsState(DEFAULT_CONFIG)
 
   Box(modifier) {
     if (timetable != null) {

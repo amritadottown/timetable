@@ -38,6 +38,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import town.amrita.timetable.BuildConfig
+import town.amrita.timetable.models.DEFAULT_CONFIG
 import town.amrita.timetable.models.WidgetConfig
 import town.amrita.timetable.models.updateShowCompletedPeriods
 import town.amrita.timetable.models.updateShowFreePeriods
@@ -53,7 +54,7 @@ import java.time.format.DateTimeFormatter
 fun SettingsScreen() {
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
-  val settings by context.widgetConfig.data.collectAsState(WidgetConfig())
+  val settings by context.widgetConfig.data.collectAsState(DEFAULT_CONFIG)
 
   TimetableScaffold("Settings") {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {

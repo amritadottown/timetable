@@ -49,9 +49,9 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import retrofit2.await
 import town.amrita.timetable.activity.LocalWidgetId
+import town.amrita.timetable.models.DEFAULT_CONFIG
 import town.amrita.timetable.models.Timetable
 import town.amrita.timetable.models.TimetableSpec
-import town.amrita.timetable.models.WidgetConfig
 import town.amrita.timetable.models.validateSchedule
 import town.amrita.timetable.models.widgetConfig
 import town.amrita.timetable.registry.RegistryService
@@ -76,7 +76,7 @@ fun TimetablePickerScreen(
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
   val state by viewModel.state.collectAsStateWithLifecycle()
-  val currentWidgetConfig by context.widgetConfig.data.collectAsStateWithLifecycle(WidgetConfig())
+  val currentWidgetConfig by context.widgetConfig.data.collectAsStateWithLifecycle(DEFAULT_CONFIG)
 
   val launcher =
     rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
