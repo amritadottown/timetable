@@ -36,8 +36,12 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import town.amrita.timetable.R
+import town.amrita.timetable.ui.components.TooltipContainer
+import town.amrita.timetable.ui.picker.LocalPickerScreen
+import town.amrita.timetable.ui.picker.TimetablePickerScreen
 
 data object RegistryRoute
+data object LocalPickerRoute
 data object SettingsRoute
 
 val LocalGlobalActions = staticCompositionLocalOf<@Composable (RowScope.() -> Unit)> { { } }
@@ -55,11 +59,13 @@ fun RootScreen() {
       if (backStack.last() == RegistryRoute) {
         var expanded by remember { mutableStateOf(false) }
         Box {
-          IconButton(onClick = { expanded = !expanded }) {
-            Icon(
-              painter = painterResource(R.drawable.more_vert_24px),
-              contentDescription = "More"
-            )
+          TooltipContainer(tooltipContent = "More") {
+            IconButton(onClick = { expanded = !expanded }) {
+              Icon(
+                painter = painterResource(R.drawable.more_vert_24px),
+                contentDescription = "More"
+              )
+            }
           }
           DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             DropdownMenuItem(
@@ -87,7 +93,10 @@ fun RootScreen() {
         ),
         entryProvider = entryProvider {
           entry<RegistryRoute> {
-            TimetablePickerScreen()
+            TimetablePickerScreen(goToLocalPicker = { backStack.add(LocalPickerRoute) })
+          }
+          entry<LocalPickerRoute> {
+            LocalPickerScreen()
           }
           entry<SettingsRoute> {
             SettingsScreen()

@@ -5,6 +5,7 @@ import android.app.Activity.MODE_PRIVATE
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
+import android.util.Log
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
@@ -37,12 +38,16 @@ suspend fun Context.updateTimetableFromUri(uri: Uri) {
 
 @SuppressLint("Range")
 fun Context.getDisplayName(uri: Uri): String {
-  contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-    if (cursor.moveToFirst()) {
-      val displayName =
-        cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
-      return displayName
+  try {
+    contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+      if (cursor.moveToFirst()) {
+        val displayName =
+          cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
+        return displayName
+      }
     }
+  } catch (e: Exception) {
+    Log.e("Timetable", e.stackTraceToString())
   }
 
   return "⚠️ Unknown File Name"
