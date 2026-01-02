@@ -2,7 +2,9 @@
 <resources>
 
     <style name="Theme.Timetable" parent="android:Theme.Material.Light.NoActionBar" />
-
     <style name="Theme.DateSwitcher" parent="android:Theme.DeviceDefault.Panel" />
+
+    <color name="icon_background">#b3284e</color>
+    <color name="icon_foreground">#ffffff</color>
 
 </resources>

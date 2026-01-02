@@ -139,7 +139,7 @@ fun SettingsScreen() {
       HorizontalDivider()
       Column {
         Text("ASEB Timetable")
-        Text("Version ${BuildConfig.VERSION_NAME} ${BuildConfig.BUILD_TYPE}")
+        Text("Version ${BuildConfig.VERSION_NAME} ${BuildConfig.FLAVOR}")
         Text(
           buildAnnotatedString {
             append("Built by ")
