@@ -6,17 +6,17 @@ import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.util.Log
+import androidx.glance.appwidget.updateAll
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import town.amrita.timetable.models.Timetable
 import town.amrita.timetable.registry.TimetableSpec
-import town.amrita.timetable.models.updateElectiveChoices
-import town.amrita.timetable.models.updateFile
-import town.amrita.timetable.models.updateIsLocal
 import town.amrita.timetable.registry.RegistryService
 import retrofit2.await
+import town.amrita.timetable.models.widgetConfig
+import town.amrita.timetable.widget.TimetableAppWidget
 import java.io.FileInputStream
 
 @SuppressLint("Range")
@@ -32,9 +32,16 @@ suspend fun Context.updateTimetableFromUri(uri: Uri, config: Map<String, String>
         output.transferFrom(input, 0, input.size())
       }
     }
-    this.updateFile(displayName)
-    this.updateIsLocal(true)
-    this.updateElectiveChoices(config)
+
+    this.widgetConfig.updateData {
+      it.copy(
+        file = displayName,
+        isLocal = true,
+        electiveChoices = config
+      )
+    }
+
+    TimetableAppWidget().updateAll(this)
   }
 }
 
@@ -68,7 +75,14 @@ suspend fun Context.updateTimetableFromRegistry(spec: TimetableSpec, config: Map
   this.openFileOutput("$spec.json", MODE_PRIVATE).use { out ->
     Json.encodeToStream(newTT, out)
   }
-  this.updateFile(spec.toString())
-  this.updateIsLocal(false)
-  this.updateElectiveChoices(config)
+
+  this.widgetConfig.updateData {
+    it.copy(
+      file = spec.toString(),
+      isLocal = false,
+      electiveChoices = config
+    )
+  }
+
+  TimetableAppWidget().updateAll(this)
 }
