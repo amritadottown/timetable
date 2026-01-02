@@ -28,7 +28,8 @@ fun DropdownPicker(
   displayOptions: List<String> = options,
   selected: String?,
   label: String,
-  onSelectionChanged: (String?) -> Unit
+  onSelectionChanged: (String?) -> Unit,
+  allowNull: Boolean = true
 ) {
   var expanded by remember { mutableStateOf(false) }
   val textFieldState = TextFieldState(selected ?: "Select")
@@ -48,15 +49,17 @@ fun DropdownPicker(
         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) }
       )
       ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-        DropdownMenuItem(
-          text = { Text("Select", style = MaterialTheme.typography.bodyLarge) },
-          onClick = {
-            textFieldState.setTextAndPlaceCursorAtEnd("Select")
-            expanded = false
-            onSelectionChanged(null)
-          },
-          contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
-        )
+        if(allowNull) {
+          DropdownMenuItem(
+            text = { Text("Select", style = MaterialTheme.typography.bodyLarge) },
+            onClick = {
+              textFieldState.setTextAndPlaceCursorAtEnd("Select")
+              expanded = false
+              onSelectionChanged(null)
+            },
+            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+          )
+        }
         options.zip(displayOptions).map{ option ->
           DropdownMenuItem(
             text = { Text(option.second, style = MaterialTheme.typography.bodyLarge) },

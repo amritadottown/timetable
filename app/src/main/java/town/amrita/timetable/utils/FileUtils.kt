@@ -11,7 +11,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import town.amrita.timetable.models.Timetable
-import town.amrita.timetable.models.TimetableSpec
+import town.amrita.timetable.registry.TimetableSpec
+import town.amrita.timetable.models.updateElectiveChoices
 import town.amrita.timetable.models.updateFile
 import town.amrita.timetable.models.updateIsLocal
 import town.amrita.timetable.registry.RegistryService
@@ -19,7 +20,7 @@ import retrofit2.await
 import java.io.FileInputStream
 
 @SuppressLint("Range")
-suspend fun Context.updateTimetableFromUri(uri: Uri) {
+suspend fun Context.updateTimetableFromUri(uri: Uri, config: Map<String, String> = emptyMap()) {
   val displayName = getDisplayName(uri)
 
   contentResolver.openFileDescriptor(uri, "r").use { fd ->
@@ -33,6 +34,7 @@ suspend fun Context.updateTimetableFromUri(uri: Uri) {
     }
     this.updateFile(displayName)
     this.updateIsLocal(true)
+    this.updateElectiveChoices(config)
   }
 }
 
@@ -61,11 +63,12 @@ fun Context.getFileContent(uri: Uri): Timetable {
 }
 
 @OptIn(ExperimentalSerializationApi::class)
-suspend fun Context.updateTimetableFromRegistry(spec: TimetableSpec) {
+suspend fun Context.updateTimetableFromRegistry(spec: TimetableSpec, config: Map<String, String> = emptyMap()) {
   val newTT = RegistryService.instance.getTimetable(spec).await()
   this.openFileOutput("$spec.json", MODE_PRIVATE).use { out ->
     Json.encodeToStream(newTT, out)
   }
   this.updateFile(spec.toString())
   this.updateIsLocal(false)
+  this.updateElectiveChoices(config)
 }

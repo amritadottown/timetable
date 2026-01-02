@@ -1,5 +1,6 @@
 package town.amrita.timetable.ui
 
+import android.net.Uri
 import android.view.animation.PathInterpolator
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.core.Easing
@@ -26,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
@@ -35,28 +37,47 @@ import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDe
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import town.amrita.timetable.R
+import town.amrita.timetable.models.Timetable
+import town.amrita.timetable.registry.TimetableSpec
 import town.amrita.timetable.ui.components.TooltipContainer
+import town.amrita.timetable.ui.picker.ConfigPickerScreen
 import town.amrita.timetable.ui.picker.LocalPickerScreen
 import town.amrita.timetable.ui.picker.TimetablePickerScreen
+import town.amrita.timetable.ui.picker.TimetableShareScreen
+import town.amrita.timetable.utils.updateTimetableFromRegistry
+import town.amrita.timetable.utils.updateTimetableFromUri
 
-data object RegistryRoute
-data object LocalPickerRoute
-data object SettingsRoute
+sealed class Route {
+  data object RegistryRoute : Route()
+  data object LocalPickerRoute : Route()
+  data class ShareScreenRoute(val uri: Uri?) : Route()
+  data class ConfigPickerRoute(
+    val timetable: Timetable,
+    val spec: TimetableSpec? = null,
+    val uri: Uri? = null
+  ) : Route()
+
+  data object SettingsRoute : Route()
+}
 
 val LocalGlobalActions = staticCompositionLocalOf<@Composable (RowScope.() -> Unit)> { { } }
 
 @Composable
-fun RootScreen() {
+fun RootScreen(startRoute: Route = Route.RegistryRoute) {
+  val context = LocalContext.current
+
   TimetableTheme {
-    val backStack = remember { mutableStateListOf<Any>(RegistryRoute) }
+    val backStack = remember { mutableStateListOf<Any>(startRoute) }
     val thingy =
       PathInterpolator(PathParser.createPathFromPathData("M 0,0 C 0.05, 0, 0.133333, 0.06, 0.166666, 0.4 C 0.208333, 0.82, 0.25, 1, 1, 1"))
     val materialEasing = Easing { thingy.getInterpolation(it) }
     val pxValue = with(LocalDensity.current) { 96.dp.roundToPx() }
 
     val globalActions: @Composable (RowScope.() -> Unit) = {
-      if (backStack.last() == RegistryRoute) {
+      if (backStack.last() == Route.RegistryRoute) {
         var expanded by remember { mutableStateOf(false) }
         Box {
           TooltipContainer(tooltipContent = "More") {
@@ -72,8 +93,8 @@ fun RootScreen() {
               text = { Text("Settings") },
               onClick = {
                 expanded = false
-                if (backStack.last() != SettingsRoute)
-                  backStack.add(SettingsRoute)
+                if (backStack.last() != Route.SettingsRoute)
+                  backStack.add(Route.SettingsRoute)
               }
             )
           }
@@ -92,13 +113,35 @@ fun RootScreen() {
           rememberViewModelStoreNavEntryDecorator()
         ),
         entryProvider = entryProvider {
-          entry<RegistryRoute> {
-            TimetablePickerScreen(goToLocalPicker = { backStack.add(LocalPickerRoute) })
+          entry<Route.RegistryRoute> {
+            TimetablePickerScreen(
+              goToLocalPicker = { backStack.add(Route.LocalPickerRoute) },
+              goToConfig = { timetable, spec -> backStack.add(Route.ConfigPickerRoute(timetable, spec = spec)) }
+            )
           }
-          entry<LocalPickerRoute> {
-            LocalPickerScreen()
+          entry<Route.LocalPickerRoute> {
+            LocalPickerScreen(
+              goToConfig = { timetable, uri -> backStack.add(Route.ConfigPickerRoute(timetable, uri = uri)) }
+            )
           }
-          entry<SettingsRoute> {
+          entry<Route.ShareScreenRoute> { route ->
+            TimetableShareScreen(route.uri, goToConfig = { timetable, uri -> backStack.add(Route.ConfigPickerRoute(timetable, uri = uri)) })
+          }
+          entry<Route.ConfigPickerRoute> { route ->
+            ConfigPickerScreen(
+              timetable = route.timetable,
+              onConfigSelected = { config ->
+                withContext(Dispatchers.IO) {
+                  if (route.spec != null) {
+                    context.updateTimetableFromRegistry(route.spec, config)
+                  } else if (route.uri != null) {
+                    context.updateTimetableFromUri(route.uri, config)
+                  }
+                }
+              },
+            )
+          }
+          entry<Route.SettingsRoute> {
             SettingsScreen()
           }
         },

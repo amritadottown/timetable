@@ -100,7 +100,7 @@ class TimetableAppWidget : GlanceAppWidget() {
 
             else -> it.day
           }
-        Pair(dayToShow, buildTimetableDisplay(dayToShow, timetable, it.showFreePeriods))
+        Pair(dayToShow, buildTimetableDisplay(dayToShow, timetable, it.showFreePeriods, it.electiveChoices))
       }.stateIn(this)
 
       context.ensureWorkAndAlarms()

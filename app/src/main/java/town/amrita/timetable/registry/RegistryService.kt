@@ -2,7 +2,6 @@ package town.amrita.timetable.registry
 
 import kotlinx.serialization.json.Json
 import town.amrita.timetable.models.Timetable
-import town.amrita.timetable.models.TimetableSpec
 import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Call
 import retrofit2.Retrofit
@@ -26,7 +25,7 @@ class RegistryService {
 
   val impl: RegistryServiceImpl by lazy {
     Retrofit.Builder()
-      .baseUrl("https://timetable-registry.amrita.town/")
+      .baseUrl("https://timetable-registry.amrita.town/v2/")
       .addConverterFactory(Json.asConverterFactory("application/json; charset=UTF8".toMediaType()))
       .build()
       .create(RegistryServiceImpl::class.java)

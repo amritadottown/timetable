@@ -47,8 +47,8 @@ import town.amrita.timetable.R
 import town.amrita.timetable.activity.LocalWidgetId
 import town.amrita.timetable.models.DEFAULT_CONFIG
 import town.amrita.timetable.models.Timetable
-import town.amrita.timetable.models.TimetableSpec
-import town.amrita.timetable.models.validateSchedule
+import town.amrita.timetable.models.validate
+import town.amrita.timetable.registry.TimetableSpec
 import town.amrita.timetable.models.widgetConfig
 import town.amrita.timetable.registry.RegistryService
 import town.amrita.timetable.registry.RegistryYears
@@ -65,7 +65,8 @@ import town.amrita.timetable.utils.updateTimetableFromRegistry
 @Composable
 fun TimetablePickerScreen(
   viewModel: RegistryScreenViewModel = viewModel(),
-  goToLocalPicker: () -> Unit = {}
+  goToLocalPicker: () -> Unit = {},
+  goToConfig: (Timetable, TimetableSpec) -> Unit = { _, _ -> }
 ) {
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
@@ -265,22 +266,44 @@ fun TimetablePickerScreen(
               TimetablePreview(
                 Modifier
                   .weight(1f)
-                  .fillMaxSize(), timetable = timetable
+                  .fillMaxSize(),
+                timetable = timetable
               )
           }
         }
       }
 
-      UseTimetableButton(
-        modifier = Modifier.fillMaxWidth(),
-        enabled = (state as? TimetablePickerScreenState.Ready)?.timetable is TimetableState.Selected,
-        onApplyTimetable = {
-          ((state as? TimetablePickerScreenState.Ready)
-            ?.timetable as? TimetableState.Selected)
-            ?.spec
-            ?.let { context.updateTimetableFromRegistry(it) }
+      val needsConfig = (state as? TimetablePickerScreenState.Ready)
+        ?.timetable
+        ?.let { it as? TimetableState.Selected }
+        ?.timetable
+        ?.config
+        ?.isNotEmpty() == true
+
+      if (needsConfig) {
+        Button(
+          modifier = Modifier.fillMaxWidth(),
+          enabled = state.timetable is TimetableState.Selected,
+          onClick = {
+            (state.timetable as? TimetableState.Selected)?.let {
+              goToConfig(it.timetable, it.spec)
+            }
+          }
+        ) {
+          Text("Continue")
         }
-      )
+      } else {
+        UseTimetableButton(
+          modifier = Modifier.fillMaxWidth(),
+          enabled = (state as? TimetablePickerScreenState.Ready)?.timetable is TimetableState.Selected,
+          onApplyTimetable = {
+            ((state as? TimetablePickerScreenState.Ready)
+              ?.timetable as? TimetableState.Selected)
+              ?.spec
+              ?.let { context.updateTimetableFromRegistry(it) }
+          }
+        )
+      }
     }
   }
 }
@@ -404,7 +427,7 @@ class RegistryScreenViewModel : ViewModel() {
         updateIfReady { it.copy(timetable = TimetableState.Loading) }
         try {
           val tt = RegistryService.instance.getTimetable(spec).await()
-          val errors = validateSchedule(tt)
+          val errors = tt.validate()
 
           updateIfReady {
             it.copy(

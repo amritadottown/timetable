@@ -15,6 +15,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -23,10 +24,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import town.amrita.timetable.models.Timetable
-import town.amrita.timetable.models.validateSchedule
+import town.amrita.timetable.models.validate
+import town.amrita.timetable.models.validateSubjectReference
 import town.amrita.timetable.ui.components.TimetablePreview
 import town.amrita.timetable.ui.components.TimetableScaffold
 import town.amrita.timetable.utils.getDisplayName
@@ -34,17 +39,23 @@ import town.amrita.timetable.utils.getFileContent
 import town.amrita.timetable.utils.updateTimetableFromUri
 
 @Composable
-fun LocalPickerScreen(viewModel: LocalPickerScreenViewModel = viewModel()) {
+fun LocalPickerScreen(
+  viewModel: LocalPickerScreenViewModel = viewModel(),
+  goToConfig: (Timetable, Uri) -> Unit = { _, _ -> }
+) {
   val state = viewModel.state.collectAsStateWithLifecycle().value
   val context = LocalContext.current
+  val scope = rememberCoroutineScope()
 
   val readFromUri = { uri: Uri ->
-    val filename = context.getDisplayName(uri)
-    try {
-      val tt = context.getFileContent(uri)
-      viewModel.fileSelected(uri, filename, tt)
-    } catch (e: Exception) {
-      viewModel.fileReadError(uri, filename, e.message.toString())
+    scope.launch {
+      val filename = context.getDisplayName(uri)
+      try {
+        val tt = withContext(Dispatchers.IO) { context.getFileContent(uri) }
+        viewModel.fileSelected(uri, filename, tt)
+      } catch (e: Exception) {
+        viewModel.fileReadError(uri, filename, e.message.toString())
+      }
     }
   }
 
@@ -110,19 +121,47 @@ fun LocalPickerScreen(viewModel: LocalPickerScreenViewModel = viewModel()) {
                 TimetablePreview(
                   Modifier
                     .weight(1f)
-                    .fillMaxSize(), timetable = timetable
+                    .fillMaxSize(), 
+                  timetable = timetable
                 )
             }
           }
       }
 
-      UseTimetableButton(
-        modifier = Modifier.fillMaxWidth(),
-        enabled = (state as? LocalPickerScreenState.Selected)?.timetable is LocalTimetableState.Selected,
-        onApplyTimetable = {
-          context.updateTimetableFromUri((state as LocalPickerScreenState.Selected).uri)
+      val needsConfig = (state as? LocalPickerScreenState.Selected)
+        ?.timetable
+        ?.let { it as? LocalTimetableState.Selected }
+        ?.timetable
+        ?.config
+        ?.isNotEmpty() == true
+
+      if (needsConfig) {
+        Button(
+          modifier = Modifier.fillMaxWidth(),
+          enabled = state.timetable is LocalTimetableState.Selected,
+          onClick = {
+            val timetableState = state.timetable as? LocalTimetableState.Selected
+
+            if (timetableState != null) {
+              goToConfig(timetableState.timetable, state.uri)
+            }
+          }
+        ) {
+          Text("Continue")
         }
-      )
+      } else {
+        UseTimetableButton(
+          modifier = Modifier.fillMaxWidth(),
+          enabled = (state as? LocalPickerScreenState.Selected)?.timetable is LocalTimetableState.Selected,
+          onApplyTimetable = {
+            val selectedState = state as? LocalPickerScreenState.Selected
+
+            if (selectedState != null) {
+              context.updateTimetableFromUri(selectedState.uri)
+            }
+          }
+        )
+      }
     }
   }
 }
@@ -145,7 +184,7 @@ class LocalPickerScreenViewModel : ViewModel() {
   val state = _state.asStateFlow()
 
   fun fileSelected(uri: Uri, filename: String, timetable: Timetable) {
-    val errors = validateSchedule(timetable)
+    val errors = timetable.validate()
     _state.value =
       LocalPickerScreenState.Selected(
         uri, filename,

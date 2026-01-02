@@ -18,7 +18,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import town.amrita.timetable.models.TimetableSpec
+import town.amrita.timetable.registry.TimetableSpec
 import town.amrita.timetable.models.UPDATE_TIMES
 import town.amrita.timetable.models.updateDay
 import town.amrita.timetable.models.widgetConfig

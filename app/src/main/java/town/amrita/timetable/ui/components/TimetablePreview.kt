@@ -45,9 +45,13 @@ import town.amrita.timetable.utils.TODAY
 import town.amrita.timetable.utils.longName
 
 @Composable
-fun TimetablePreview(modifier: Modifier = Modifier, timetable: Timetable?) {
+fun TimetablePreview(
+  modifier: Modifier = Modifier,
+  timetable: Timetable?,
+  config: Map<String, String>? = null,
+) {
   val context = LocalContext.current
-  val config = context.widgetConfig.data.collectAsState(DEFAULT_CONFIG)
+  val widgetConfig = context.widgetConfig.data.collectAsState(DEFAULT_CONFIG)
 
   Box(modifier) {
     if (timetable != null) {
@@ -56,7 +60,7 @@ fun TimetablePreview(modifier: Modifier = Modifier, timetable: Timetable?) {
         rememberPagerState(initialPage = initialPage) { timetable.schedule.keys.size }
       HorizontalPager(state = pagerState, pageSpacing = 8.dp) { page ->
         val day = DAYS[page]
-        val timetableDisplay = buildTimetableDisplay(day, timetable, config.value.showFreePeriods)
+        val timetableDisplay = buildTimetableDisplay(day, timetable, widgetConfig.value.showFreePeriods, config)
         Column {
           Text(
             day.longName(),

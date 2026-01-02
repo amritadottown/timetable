@@ -10,10 +10,14 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonIgnoreUnknownKeys
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.encodeToStream
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonObject
@@ -30,7 +34,7 @@ import java.time.LocalTime
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
-val CONFIG_VERSION = 1
+const val CONFIG_VERSION = 2
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
@@ -58,32 +62,37 @@ private object WidgetConfigSerializer : Serializer<WidgetConfig> {
   override suspend fun readFrom(input: InputStream): WidgetConfig {
     val text = input.bufferedReader().use { it.readText() }
     try {
-      val config = Json.decodeFromString<WidgetConfig>(text)
-      return when (config.version) {
-        CONFIG_VERSION -> config
-        else -> config.copy(version = CONFIG_VERSION)
-      }
-    } catch (_: SerializationException) {
-      try {
-        val jsonElement = Json.parseToJsonElement(text)
-        val json = jsonElement.jsonObject
-        val version = json["version"]?.jsonPrimitive?.int ?: 0
+      val jsonElement = Json.parseToJsonElement(text)
+      val json = jsonElement.jsonObject
+      var version = json["version"]?.jsonPrimitive?.int ?: 0
 
-        when (version) {
-          // every version before migrations were added
-          // the last one of those (1.0.6) incorrectly deserializes day from int to DayOfWeek
-          0 -> {
-            val updated = json.toMutableMap().apply { this["day"] = JsonNull }
-            return Json.decodeFromJsonElement<WidgetConfig>(JsonObject(updated))
-              .copy(version = CONFIG_VERSION)
+      return when (version) {
+        CONFIG_VERSION -> Json.decodeFromJsonElement<WidgetConfig>(jsonElement)
+        else -> {
+          var currentJson = json.toMutableMap()
+          if (version == 0) {
+            // every version before migrations were added
+            // the last one of those (1.0.6) incorrectly deserializes day from int to DayOfWeek
+            currentJson["day"] = JsonNull
+            version = 1
+          }
+          if (version == 1) {
+            // v2 schema migration: clear timetable data to force reconfiguration
+            // we can preserve cosmetic options though
+            currentJson["day"] = JsonNull
+            currentJson["isLocal"] = JsonPrimitive(true)
+            currentJson["file"] = JsonNull
+            currentJson["electiveChoices"] = JsonObject(emptyMap())
+            currentJson["lockedUntil"] = JsonNull
+
+            version = 2
           }
 
-          else -> throw CorruptionException("Invalid configuration version")
+          Json.decodeFromJsonElement<WidgetConfig>(JsonObject(currentJson)).copy(version = CONFIG_VERSION)
         }
-
-      } catch (e: Exception) {
-        throw CorruptionException("Could not parse config", e)
       }
+    } catch (e: Exception) {
+      throw CorruptionException("Could not parse config", e)
     }
   }
 
@@ -112,6 +121,14 @@ suspend fun Context.updateDay(day: DayOfWeek?) {
 suspend fun Context.updateFile(file: String) {
   this.widgetConfig.updateData {
     it.copy(file = file)
+  }
+
+  TimetableAppWidget().updateAll(this)
+}
+
+suspend fun Context.updateElectiveChoices(choices: Map<String, String>) {
+  this.widgetConfig.updateData {
+    it.copy(electiveChoices = choices)
   }
 
   TimetableAppWidget().updateAll(this)
