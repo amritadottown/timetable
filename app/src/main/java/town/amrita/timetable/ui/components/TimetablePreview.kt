@@ -16,7 +16,8 @@ import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CircularWavyProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -44,6 +45,7 @@ import town.amrita.timetable.utils.DAYS
 import town.amrita.timetable.utils.TODAY
 import town.amrita.timetable.utils.longName
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun TimetablePreview(
   modifier: Modifier = Modifier,
@@ -87,7 +89,7 @@ fun TimetablePreview(
       }
     } else {
       Box(Modifier.matchParentSize()) {
-        CircularProgressIndicator(Modifier.align(Alignment.Center))
+        CircularWavyProgressIndicator(Modifier.align(Alignment.Center))
       }
     }
   }

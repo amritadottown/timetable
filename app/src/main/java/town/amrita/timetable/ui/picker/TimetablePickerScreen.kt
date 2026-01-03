@@ -13,7 +13,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CircularWavyProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -61,7 +62,7 @@ import town.amrita.timetable.ui.components.TimetableScaffold
 import town.amrita.timetable.ui.components.TooltipContainer
 import town.amrita.timetable.utils.updateTimetableFromRegistry
 
-@OptIn(ExperimentalSerializationApi::class)
+@OptIn(ExperimentalSerializationApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun TimetablePickerScreen(
   viewModel: RegistryScreenViewModel = viewModel(),
@@ -176,7 +177,7 @@ fun TimetablePickerScreen(
               .padding(top = 48.dp),
             horizontalAlignment = Alignment.CenterHorizontally
           ) {
-            CircularProgressIndicator()
+            CircularWavyProgressIndicator()
           }
 
         is TimetablePickerScreenState.IndexError ->
@@ -232,7 +233,7 @@ fun TimetablePickerScreen(
                   .weight(1f)
                   .fillMaxSize()
               ) {
-                CircularProgressIndicator(Modifier.align(Alignment.Center))
+                CircularWavyProgressIndicator(Modifier.align(Alignment.Center))
               }
 
             is TimetableState.FetchError ->
