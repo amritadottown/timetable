@@ -6,6 +6,7 @@ import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideIn
 import androidx.compose.animation.slideOut
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -65,6 +67,7 @@ sealed class Route {
 
 val LocalGlobalActions = staticCompositionLocalOf<@Composable (RowScope.() -> Unit)> { { } }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun RootScreen(startRoute: Route = Route.RegistryRoute) {
   val context = LocalContext.current
@@ -77,7 +80,7 @@ fun RootScreen(startRoute: Route = Route.RegistryRoute) {
     val pxValue = with(LocalDensity.current) { 96.dp.roundToPx() }
 
     val globalActions: @Composable (RowScope.() -> Unit) = {
-      if (backStack.last() == Route.RegistryRoute) {
+      if (backStack.last() != Route.SettingsRoute) {
         var expanded by remember { mutableStateOf(false) }
         Box {
           TooltipContainer(tooltipContent = "More") {
@@ -101,6 +104,10 @@ fun RootScreen(startRoute: Route = Route.RegistryRoute) {
         }
       }
     }
+
+    val materialTween = tween<IntOffset>(durationMillis = 450, easing = materialEasing)
+    val pushFadeOutTween = tween<Float>(durationMillis = 83, easing = LinearEasing, delayMillis = 50)
+    val popFadeOutTween = tween<Float>(durationMillis = 83, easing = LinearEasing, delayMillis = 35)
 
     CompositionLocalProvider(LocalGlobalActions provides globalActions) {
       NavDisplay(
@@ -156,53 +163,28 @@ fun RootScreen(startRoute: Route = Route.RegistryRoute) {
         },
         transitionSpec = {
           ContentTransform(
-            slideIn(
-              animationSpec = tween(
-                durationMillis = 450,
-                easing = materialEasing
-              )
-            ) { _ -> IntOffset(pxValue, 0) },
-            fadeOut(
-              animationSpec = tween(
-                durationMillis = 83,
-                easing = LinearEasing,
-                delayMillis = 50
-              )
-            )
-                    + slideOut(
-              animationSpec = tween(
-                durationMillis = 450,
-                easing = materialEasing
-              )
-            ) { _ -> IntOffset(-pxValue, 0) },
+            fadeIn(animationSpec = pushFadeOutTween) + slideIn(animationSpec = materialTween) { _ -> IntOffset(pxValue, 0) },
+            fadeOut(animationSpec = pushFadeOutTween)
+                    + slideOut(animationSpec = materialTween) { _ -> IntOffset(-pxValue, 0) },
             -1f
           )
         },
         popTransitionSpec = {
           ContentTransform(
-            slideIn(
-              animationSpec = tween(
-                durationMillis = 450,
-                easing = materialEasing
-              )
-            ) { _ -> IntOffset(-pxValue, 0) },
-            fadeOut(
-              animationSpec = tween(
-                durationMillis = 83,
-                easing = LinearEasing,
-                delayMillis = 35
-              )
-            )
-                    + slideOut(
-              animationSpec = tween(
-                durationMillis = 450,
-                easing = materialEasing
-              )
-            ) { _ -> IntOffset(pxValue, 0) },
+            slideIn(animationSpec = materialTween) { _ -> IntOffset(-pxValue, 0) },
+            fadeOut(animationSpec = popFadeOutTween)
+                    + slideOut(animationSpec = materialTween) { _ -> IntOffset(pxValue, 0) },
             -1f
           )
         },
-//        predictivePopTransitionSpec =
+        predictivePopTransitionSpec = {
+          ContentTransform(
+            slideIn(animationSpec = materialTween) { _ -> IntOffset(-pxValue / 2, 0) },
+            fadeOut(animationSpec = popFadeOutTween)
+                    + slideOut(animationSpec = materialTween) { _ -> IntOffset(pxValue / 2, 0) },
+            -1f
+          )
+        }
       )
     }
   }
