@@ -116,16 +116,25 @@ fun RootScreen(startRoute: Route = Route.RegistryRoute) {
           entry<Route.RegistryRoute> {
             TimetablePickerScreen(
               goToLocalPicker = { backStack.add(Route.LocalPickerRoute) },
-              goToConfig = { timetable, spec -> backStack.add(Route.ConfigPickerRoute(timetable, spec = spec)) }
+              goToConfig = { timetable, spec ->
+                backStack.add(Route.ConfigPickerRoute(timetable, spec = spec))
+              }
             )
           }
           entry<Route.LocalPickerRoute> {
             LocalPickerScreen(
-              goToConfig = { timetable, uri -> backStack.add(Route.ConfigPickerRoute(timetable, uri = uri)) }
+              goToConfig = { timetable, uri ->
+                backStack.add(Route.ConfigPickerRoute(timetable, uri = uri))
+              }
             )
           }
           entry<Route.ShareScreenRoute> { route ->
-            TimetableShareScreen(route.uri, goToConfig = { timetable, uri -> backStack.add(Route.ConfigPickerRoute(timetable, uri = uri)) })
+            TimetableShareScreen(
+              route.uri,
+              goToConfig = { timetable, uri ->
+                backStack.add(Route.ConfigPickerRoute(timetable, uri = uri))
+              }
+            )
           }
           entry<Route.ConfigPickerRoute> { route ->
             ConfigPickerScreen(

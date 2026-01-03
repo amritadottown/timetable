@@ -66,7 +66,7 @@ data class Subject(
   val name: String,
   val code: String,
   val faculty: List<String>,
-  val shortName: String = name.split(" ").map{ e -> e[0] }.filter({ e -> e.isUpperCase() })
+  val shortName: String = name.split(" ").map{ e -> e[0] }.filter { e -> e.isUpperCase() }
     .joinToString(separator = "")
 )  {
   companion object {

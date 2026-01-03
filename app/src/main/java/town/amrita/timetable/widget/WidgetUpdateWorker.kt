@@ -60,9 +60,7 @@ class WidgetUpdateWorker(context: Context, workParams: WorkerParameters) :
     if (tags.contains("REGISTRY_UPDATE") && config.isLocal == false) {
       applicationContext.ensureWorkAndAlarms()
       try {
-        val file = config.file
-        if (file == null)
-          return Result.failure()
+        val file = config.file ?: return Result.failure()
 
         val spec = TimetableSpec.fromString(file)
         applicationContext.updateTimetableFromRegistry(spec)

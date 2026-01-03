@@ -8,16 +8,12 @@ import androidx.datastore.dataStore
 import androidx.glance.appwidget.updateAll
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonIgnoreUnknownKeys
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.decodeFromJsonElement
-import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.encodeToStream
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonObject
@@ -69,7 +65,7 @@ private object WidgetConfigSerializer : Serializer<WidgetConfig> {
       return when (version) {
         CONFIG_VERSION -> Json.decodeFromJsonElement<WidgetConfig>(jsonElement)
         else -> {
-          var currentJson = json.toMutableMap()
+          val currentJson = json.toMutableMap()
           if (version == 0) {
             // every version before migrations were added
             // the last one of those (1.0.6) incorrectly deserializes day from int to DayOfWeek

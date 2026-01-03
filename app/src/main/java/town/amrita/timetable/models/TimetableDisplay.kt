@@ -15,7 +15,7 @@ data class TimetableDisplayEntry(
 
 data class TimetableSlot(val start: LocalTime, val end: LocalTime) {
   fun containsTime(time: LocalTime): Boolean {
-    return start <= time && time < end
+    return time in start..<end
   }
 
   override fun toString(): String {
@@ -56,9 +56,7 @@ fun buildTimetableDisplay(
   showFreePeriods: Boolean = true,
   config: Map<String, String>?
 ): List<TimetableDisplayEntry> {
-  val rawSchedule = timetable.schedule[day]
-  if (rawSchedule == null)
-    return emptyList()
+  val rawSchedule = timetable.schedule[day] ?: return emptyList()
 
   val times: MutableList<TimetableDisplayEntry> = mutableListOf()
 
@@ -84,8 +82,7 @@ fun buildTimetableDisplay(
       }
 
     fun resolveSubject(name: String): Subject {
-      val trimmed = name.removeSuffix("_LAB")
-      return when (trimmed) {
+      return when (val trimmed = name.removeSuffix("_LAB")) {
         "FREE" -> Subject.FREE
         in timetable.subjects -> timetable.subjects[trimmed] ?: Subject.UNKNOWN
         else -> Subject.UNKNOWN

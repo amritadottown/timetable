@@ -31,7 +31,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import town.amrita.timetable.models.Timetable
 import town.amrita.timetable.models.validate
-import town.amrita.timetable.models.validateSubjectReference
 import town.amrita.timetable.ui.components.TimetablePreview
 import town.amrita.timetable.ui.components.TimetableScaffold
 import town.amrita.timetable.utils.getDisplayName
