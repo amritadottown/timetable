@@ -1,16 +1,21 @@
 package town.amrita.timetable.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.foundation.verticalScroll
@@ -26,12 +31,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import town.amrita.timetable.R
@@ -44,6 +51,16 @@ import town.amrita.timetable.ui.LocalTimetableColors
 import town.amrita.timetable.utils.DAYS
 import town.amrita.timetable.utils.TODAY
 import town.amrita.timetable.utils.longName
+
+val StaggeredPageSize =
+  object : PageSize {
+    override fun Density.calculateMainAxisPageSize(
+      availableSpace: Int,
+      pageSpacing: Int,
+    ): Int {
+      return availableSpace - pageSpacing * 5
+    }
+  }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -60,30 +77,56 @@ fun TimetablePreview(
       val initialPage = if (timetable.schedule.keys.contains(TODAY)) DAYS.indexOf(TODAY) else 0
       val pagerState =
         rememberPagerState(initialPage = initialPage) { timetable.schedule.keys.size }
-      HorizontalPager(state = pagerState, pageSpacing = 8.dp) { page ->
-        val day = DAYS[page]
-        val timetableDisplay = buildTimetableDisplay(day, timetable, widgetConfig.value.showFreePeriods, config)
-        Column {
-          Text(
-            day.longName(),
-            Modifier.padding(start = 4.dp, bottom = 12.dp),
-            fontWeight = FontWeight.Medium
-          )
-          if (!timetableDisplay.isEmpty()) {
-            Column(
-              modifier = Modifier
-                .fillMaxHeight()
-                .verticalScroll(rememberScrollState()),
-              verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-              timetableDisplay.map {
-                TimetableItem(it)
+
+      Column(Modifier.matchParentSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+        HorizontalPager(
+          modifier = Modifier.weight(1f).fillMaxSize(),
+          state = pagerState,
+          pageSpacing = 8.dp,
+          pageSize = StaggeredPageSize,
+          snapPosition = SnapPosition.Center,
+          verticalAlignment = Alignment.Top
+        ) { page ->
+          val day = DAYS[page]
+          val timetableDisplay =
+            buildTimetableDisplay(day, timetable, widgetConfig.value.showFreePeriods, config)
+          Column {
+            Text(
+              day.longName(),
+              Modifier.padding(start = 4.dp, bottom = 12.dp),
+              fontWeight = FontWeight.Medium
+            )
+            if (!timetableDisplay.isEmpty()) {
+              Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+              ) {
+                timetableDisplay.map {
+                  TimetableItem(it)
+                }
+              }
+            } else {
+              Box(Modifier.fillMaxSize()) {
+                Text("Nothing today :)", Modifier.align(Alignment.Center))
               }
             }
-          } else {
-            Box(Modifier.fillMaxSize()) {
-              Text("Nothing today :)", Modifier.align(Alignment.Center))
-            }
+          }
+        }
+
+        Row(
+          Modifier
+            .wrapContentSize()
+            .padding(top = 16.dp),
+          horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+          repeat(pagerState.pageCount) { iteration ->
+            val color = if (pagerState.currentPage == iteration) MaterialTheme.colorScheme.primary else LocalTimetableColors.current.behindTimetableItem
+            Box(
+              modifier = Modifier
+                .clip(CircleShape)
+                .background(color)
+                .size(8.dp)
+            )
           }
         }
       }
