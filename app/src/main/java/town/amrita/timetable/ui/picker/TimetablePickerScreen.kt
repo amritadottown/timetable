@@ -415,33 +415,38 @@ class RegistryScreenViewModel : ViewModel() {
         return@launch
 
       if (registryYears[s.currentYear]?.get(s.currentSection)
-          ?.contains(s.currentSemester) == true
+          ?.contains(s.currentSemester) != true
       ) {
-        val spec = TimetableSpec(
-          s.currentYear.toString(), s.currentSection.toString(),
-          s.currentSemester.toString()
-        )
-
-        if ((s.timetable as? TimetableState.Selected)?.spec == spec)
-          return@launch
-
-        updateIfReady { it.copy(timetable = TimetableState.Loading) }
-        try {
-          val tt = RegistryService.instance.getTimetable(spec).await()
-          val errors = tt.validate()
-
-          updateIfReady {
-            it.copy(
-              timetable =
-                if (errors.isEmpty()) TimetableState.Selected(spec, tt)
-                else TimetableState.ValidationError(errors)
-            )
-          }
-
-        } catch (e: Exception) {
-          Log.d("Timetable", "Failed to fetch timetable: $e")
-          updateIfReady { it.copy(timetable = TimetableState.FetchError(e.message.toString())) }
+        updateIfReady {
+          it.copy(timetable = TimetableState.NotSelected)
         }
+        return@launch
+      }
+
+      val spec = TimetableSpec(
+        s.currentYear.toString(), s.currentSection.toString(),
+        s.currentSemester.toString()
+      )
+
+      if ((s.timetable as? TimetableState.Selected)?.spec == spec)
+        return@launch
+
+      updateIfReady { it.copy(timetable = TimetableState.Loading) }
+      try {
+        val tt = RegistryService.instance.getTimetable(spec).await()
+        val errors = tt.validate()
+
+        updateIfReady {
+          it.copy(
+            timetable =
+              if (errors.isEmpty()) TimetableState.Selected(spec, tt)
+              else TimetableState.ValidationError(errors)
+          )
+        }
+
+      } catch (e: Exception) {
+        Log.d("Timetable", "Failed to fetch timetable: $e")
+        updateIfReady { it.copy(timetable = TimetableState.FetchError(e.message.toString())) }
       }
     }
   }
