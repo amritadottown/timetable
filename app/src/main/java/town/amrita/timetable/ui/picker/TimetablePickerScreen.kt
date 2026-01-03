@@ -173,11 +173,11 @@ fun TimetablePickerScreen(
         TimetablePickerScreenState.IndexLoading ->
           Column(
             Modifier
-              .fillMaxSize()
-              .padding(top = 48.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+              .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
           ) {
-            CircularWavyProgressIndicator()
+            CircularWavyProgressIndicator(Modifier.padding(bottom = 152.dp))
           }
 
         is TimetablePickerScreenState.IndexError ->
