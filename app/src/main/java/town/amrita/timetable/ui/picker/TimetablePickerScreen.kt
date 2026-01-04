@@ -183,6 +183,7 @@ fun TimetablePickerScreen(
 
         is TimetablePickerScreenState.IndexError ->
           Column(
+            Modifier.padding(horizontal = 24.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
           ) {
             Text("⚠️ Error: ${state.message}")
@@ -195,7 +196,10 @@ fun TimetablePickerScreen(
 
         is TimetablePickerScreenState.Ready ->
           with(state) {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Column(
+              Modifier.padding(horizontal = 24.dp),
+              verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
               DropdownPicker(
                 options = years.toList().sorted(),
                 selected = currentYear,
@@ -246,6 +250,7 @@ fun TimetablePickerScreen(
             is TimetableState.FetchError ->
               Column(
                 Modifier
+                  .padding(24.dp)
                   .weight(1f)
                   .fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -261,6 +266,7 @@ fun TimetablePickerScreen(
             is TimetableState.ValidationError ->
               Column(
                 Modifier
+                  .padding(24.dp)
                   .weight(1f)
                   .fillMaxSize()
               ) {
@@ -290,29 +296,31 @@ fun TimetablePickerScreen(
         ?.config
         ?.isNotEmpty() == true
 
-      if (needsConfig) {
-        Button(
-          modifier = Modifier.fillMaxWidth(),
-          enabled = state.timetable is TimetableState.Selected,
-          onClick = {
-            (state.timetable as? TimetableState.Selected)?.let {
-              goToConfig(it.timetable, it.spec)
+      Box(Modifier.padding(horizontal = 24.dp)) {
+        if (needsConfig) {
+          Button(
+            modifier = Modifier.fillMaxWidth(),
+            enabled = state.timetable is TimetableState.Selected,
+            onClick = {
+              (state.timetable as? TimetableState.Selected)?.let {
+                goToConfig(it.timetable, it.spec)
+              }
             }
+          ) {
+            Text("Continue")
           }
-        ) {
-          Text("Continue")
+        } else {
+          UseTimetableButton(
+            modifier = Modifier.fillMaxWidth(),
+            enabled = (state as? TimetablePickerScreenState.Ready)?.timetable is TimetableState.Selected,
+            onApplyTimetable = {
+              ((state as? TimetablePickerScreenState.Ready)
+                ?.timetable as? TimetableState.Selected)
+                ?.spec
+                ?.let { context.updateTimetableFromRegistry(it, emptyMap(), useCurrentConfig = false) }
+            }
+          )
         }
-      } else {
-        UseTimetableButton(
-          modifier = Modifier.fillMaxWidth(),
-          enabled = (state as? TimetablePickerScreenState.Ready)?.timetable is TimetableState.Selected,
-          onApplyTimetable = {
-            ((state as? TimetablePickerScreenState.Ready)
-              ?.timetable as? TimetableState.Selected)
-              ?.spec
-              ?.let { context.updateTimetableFromRegistry(it, emptyMap(), useCurrentConfig = false) }
-          }
-        )
       }
     }
   }

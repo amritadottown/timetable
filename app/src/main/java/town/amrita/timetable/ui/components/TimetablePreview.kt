@@ -5,6 +5,7 @@ import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -61,7 +62,7 @@ val StaggeredPageSize =
       availableSpace: Int,
       pageSpacing: Int,
     ): Int {
-      return availableSpace - pageSpacing * 4
+      return availableSpace - pageSpacing * 2
     }
   }
 
@@ -96,7 +97,8 @@ fun TimetablePreview(
           pageSpacing = 8.dp,
           pageSize = StaggeredPageSize,
           snapPosition = SnapPosition.Center,
-          verticalAlignment = Alignment.Top
+          verticalAlignment = Alignment.Top,
+          contentPadding = PaddingValues(horizontal = 24.dp)
         ) { page ->
           val day = DAYS[page]
           val timetableDisplay =

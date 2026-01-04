@@ -48,8 +48,8 @@ fun TimetableScaffold(
     },
     contentWindowInsets = ScaffoldDefaults.contentWindowInsets.add(
       WindowInsets(
-        left = 24.dp,
-        right = 24.dp
+//        left = 24.dp,
+//        right = 24.dp
       )
     ),
     snackbarHost = { SnackbarHost(hostState = snackbarHostState) }

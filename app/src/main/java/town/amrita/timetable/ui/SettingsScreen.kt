@@ -56,7 +56,10 @@ fun SettingsScreen() {
   val settings by context.widgetConfig.data.collectAsState(DEFAULT_CONFIG)
 
   TimetableScaffold("Settings") {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(
+      Modifier.padding(horizontal = 24.dp),
+      verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
       Row(
         Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,

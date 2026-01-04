@@ -5,12 +5,14 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
@@ -72,6 +74,7 @@ fun LocalPickerScreen(
   TimetableScaffold(title = "Select File") {
     Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
       Row(
+        Modifier.padding(horizontal = 24.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
       ) {
@@ -99,6 +102,7 @@ fun LocalPickerScreen(
               is LocalTimetableState.ReadError ->
                 Column(
                   Modifier
+                    .padding(horizontal = 24.dp)
                     .weight(1f)
                     .fillMaxSize(),
                   verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -114,6 +118,7 @@ fun LocalPickerScreen(
               is LocalTimetableState.ValidationError ->
                 Column(
                   Modifier
+                    .padding(horizontal = 24.dp)
                     .weight(1f)
                     .fillMaxSize()
                 ) {
@@ -143,32 +148,34 @@ fun LocalPickerScreen(
         ?.config
         ?.isNotEmpty() == true
 
-      if (needsConfig) {
-        Button(
-          modifier = Modifier.fillMaxWidth(),
-          enabled = state.timetable is LocalTimetableState.Selected,
-          onClick = {
-            val timetableState = state.timetable as? LocalTimetableState.Selected
+      Box(Modifier.padding(horizontal = 24.dp)) {
+        if (needsConfig) {
+          Button(
+            modifier = Modifier.fillMaxWidth(),
+            enabled = state.timetable is LocalTimetableState.Selected,
+            onClick = {
+              val timetableState = state.timetable as? LocalTimetableState.Selected
 
-            if (timetableState != null) {
-              goToConfig(timetableState.timetable, state.uri)
+              if (timetableState != null) {
+                goToConfig(timetableState.timetable, state.uri)
+              }
             }
+          ) {
+            Text("Continue")
           }
-        ) {
-          Text("Continue")
+        } else {
+          UseTimetableButton(
+            modifier = Modifier.fillMaxWidth(),
+            enabled = (state as? LocalPickerScreenState.Selected)?.timetable is LocalTimetableState.Selected,
+            onApplyTimetable = {
+              val selectedState = state as? LocalPickerScreenState.Selected
+
+              if (selectedState != null) {
+                context.updateTimetableFromUri(selectedState.uri, emptyMap())
+              }
+            }
+          )
         }
-      } else {
-        UseTimetableButton(
-          modifier = Modifier.fillMaxWidth(),
-          enabled = (state as? LocalPickerScreenState.Selected)?.timetable is LocalTimetableState.Selected,
-          onApplyTimetable = {
-            val selectedState = state as? LocalPickerScreenState.Selected
-
-            if (selectedState != null) {
-              context.updateTimetableFromUri(selectedState.uri, emptyMap())
-            }
-          }
-        )
       }
     }
   }

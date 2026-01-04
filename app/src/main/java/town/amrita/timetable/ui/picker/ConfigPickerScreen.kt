@@ -1,10 +1,12 @@
 package town.amrita.timetable.ui.picker
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,20 +38,27 @@ fun ConfigPickerScreen(
       verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
       if (timetable.config.isEmpty()) {
-        Text("No configuration needed for this timetable.", fontWeight = FontWeight.Medium)
+        Column(Modifier.padding(horizontal = 24.dp)) {
+          Text("No configuration needed for this timetable.", fontWeight = FontWeight.Medium)
+        }
         Spacer(Modifier.weight(1f))
       } else {
-        for ((key, option) in timetable.config) {
-          DropdownPicker(
-            options = option.values.map { it.id },
-            displayOptions = option.values.map { it.label },
-            selected = selectedConfig[key],
-            label = option.label,
-            allowNull = false,
-            onSelectionChanged = { newValue ->
-              selectedConfig = selectedConfig + (key to (newValue ?: ""))
-            }
-          )
+        Column(
+          Modifier.padding(horizontal = 24.dp),
+          verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+          for ((key, option) in timetable.config) {
+            DropdownPicker(
+              options = option.values.map { it.id },
+              displayOptions = option.values.map { it.label },
+              selected = selectedConfig[key],
+              label = option.label,
+              allowNull = false,
+              onSelectionChanged = { newValue ->
+                selectedConfig = selectedConfig + (key to (newValue ?: ""))
+              }
+            )
+          }
         }
 
         TimetablePreview(
@@ -61,10 +70,12 @@ fun ConfigPickerScreen(
         )
       }
 
-      UseTimetableButton(
-        modifier = Modifier.fillMaxWidth(),
-        enabled = selectedConfig.values.all { it.isNotEmpty() },
-        onApplyTimetable = { onConfigSelected(selectedConfig) })
+      Box(Modifier.padding(horizontal = 24.dp)) {
+        UseTimetableButton(
+          modifier = Modifier.fillMaxWidth(),
+          enabled = selectedConfig.values.all { it.isNotEmpty() },
+          onApplyTimetable = { onConfigSelected(selectedConfig) })
+      }
     }
   }
 }

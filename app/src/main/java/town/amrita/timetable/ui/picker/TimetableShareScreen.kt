@@ -2,9 +2,11 @@ package town.amrita.timetable.ui.picker
 
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -53,12 +55,12 @@ fun TimetableShareScreen(uri: Uri?, goToConfig: (Timetable, Uri) -> Unit = { _, 
     TimetableScaffold("Import Timetable") {
       Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(24.dp)) {
         if (uri == null) {
-          Text("No URI provided")
+          Text("No URI provided", Modifier.padding(horizontal = 24.dp))
           return@Column
         }
 
         timetable?.let { timetable ->
-          Text(name)
+          Text(name, Modifier.padding(horizontal = 24.dp))
           if (validationResult.isEmpty()) {
             TimetablePreview(
               Modifier
@@ -66,9 +68,11 @@ fun TimetableShareScreen(uri: Uri?, goToConfig: (Timetable, Uri) -> Unit = { _, 
                 .fillMaxSize(), timetable = timetable
             )
           } else {
-            Column(Modifier
-              .weight(1f)
-              .fillMaxSize()) {
+            Column(
+              Modifier
+                .padding(horizontal = 24.dp)
+                .weight(1f)
+                .fillMaxSize()) {
               Text(text = "⚠️ Errors found", fontWeight = FontWeight.Medium)
               validationResult.map {
                 Text(it)
@@ -78,24 +82,26 @@ fun TimetableShareScreen(uri: Uri?, goToConfig: (Timetable, Uri) -> Unit = { _, 
 
           val needsConfig = timetable.config.isNotEmpty()
 
-          if (needsConfig) {
-            Button(
-              modifier = Modifier.fillMaxWidth(),
-              enabled = validationResult.isEmpty(),
-              onClick = {
-                goToConfig(timetable, uri)
+          Box(Modifier.padding(horizontal = 24.dp)) {
+            if (needsConfig) {
+              Button(
+                modifier = Modifier.fillMaxWidth(),
+                enabled = validationResult.isEmpty(),
+                onClick = {
+                  goToConfig(timetable, uri)
+                }
+              ) {
+                Text("Continue")
               }
-            ) {
-              Text("Continue")
+            } else {
+              UseTimetableButton(
+                modifier = Modifier.fillMaxWidth(),
+                enabled = validationResult.isEmpty(),
+                onApplyTimetable = {
+                  context.updateTimetableFromUri(uri, emptyMap())
+                }
+              )
             }
-          } else {
-            UseTimetableButton(
-              modifier = Modifier.fillMaxWidth(),
-              enabled = validationResult.isEmpty(),
-              onApplyTimetable = {
-                context.updateTimetableFromUri(uri, emptyMap())
-              }
-            )
           }
         }
       }
