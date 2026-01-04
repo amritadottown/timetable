@@ -197,7 +197,7 @@ fun TimetablePickerScreen(
           with(state) {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
               DropdownPicker(
-                options = years.toList(),
+                options = years.toList().sorted(),
                 selected = currentYear,
                 label = "Start Year",
                 onSelectionChanged = viewModel::yearChanged
@@ -205,7 +205,7 @@ fun TimetablePickerScreen(
               if(sections.isEmpty())
                 return@Column
               DropdownPicker(
-                options = sections.toList(),
+                options = sections.toList().sortedBy { x -> x.split("-").last() },
                 selected = currentSection,
                 label = "Section",
                 onSelectionChanged = viewModel::sectionChanged
@@ -213,7 +213,7 @@ fun TimetablePickerScreen(
               if(semesters.isEmpty())
                 return@Column
               DropdownPicker(
-                options = semesters.toList(),
+                options = semesters.toList().sorted(),
                 selected = currentSemester,
                 label = "Semester",
                 onSelectionChanged = viewModel::semesterChanged
