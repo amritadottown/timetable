@@ -18,7 +18,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import retrofit2.await
 import town.amrita.timetable.registry.TimetableSpec
+import town.amrita.timetable.registry.RegistryService
 import town.amrita.timetable.models.UPDATE_TIMES
 import town.amrita.timetable.models.updateDay
 import town.amrita.timetable.models.widgetConfig
@@ -61,9 +63,24 @@ class WidgetUpdateWorker(context: Context, workParams: WorkerParameters) :
       applicationContext.ensureWorkAndAlarms()
       try {
         val file = config.file ?: return Result.failure()
-
         val spec = TimetableSpec.fromString(file)
-        applicationContext.updateTimetableFromRegistry(spec)
+
+        val newTimetable = RegistryService.instance.getTimetable(spec).await()
+
+        val currentChoices = config.electiveChoices
+        val isIncompatible = currentChoices.any { (optionName, selectedValue) ->
+          val configOption = newTimetable.config[optionName]
+          // choice is incompatible if the option no longer exists or the selected value is no longer valid
+          configOption == null || configOption.values.none { it.id == selectedValue }
+        }
+
+        if (isIncompatible) {
+          applicationContext.widgetConfig.updateData {
+            it.copy(file = null)
+          }
+        } else {
+          applicationContext.updateTimetableFromRegistry(spec, emptyMap(), useCurrentConfig = true)
+        }
       } catch (_: Exception) {
       }
     }

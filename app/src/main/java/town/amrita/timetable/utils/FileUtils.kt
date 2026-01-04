@@ -20,7 +20,7 @@ import town.amrita.timetable.widget.TimetableAppWidget
 import java.io.FileInputStream
 
 @SuppressLint("Range")
-suspend fun Context.updateTimetableFromUri(uri: Uri, config: Map<String, String> = emptyMap()) {
+suspend fun Context.updateTimetableFromUri(uri: Uri, config: Map<String, String>) {
   val displayName = getDisplayName(uri)
 
   contentResolver.openFileDescriptor(uri, "r").use { fd ->
@@ -70,7 +70,7 @@ fun Context.getFileContent(uri: Uri): Timetable {
 }
 
 @OptIn(ExperimentalSerializationApi::class)
-suspend fun Context.updateTimetableFromRegistry(spec: TimetableSpec, config: Map<String, String> = emptyMap()) {
+suspend fun Context.updateTimetableFromRegistry(spec: TimetableSpec, config: Map<String, String>, useCurrentConfig: Boolean) {
   val newTT = RegistryService.instance.getTimetable(spec).await()
   this.openFileOutput("$spec.json", MODE_PRIVATE).use { out ->
     Json.encodeToStream(newTT, out)
@@ -80,7 +80,7 @@ suspend fun Context.updateTimetableFromRegistry(spec: TimetableSpec, config: Map
     it.copy(
       file = spec.toString(),
       isLocal = false,
-      electiveChoices = config
+      electiveChoices = if (useCurrentConfig) it.electiveChoices else config
     )
   }
 

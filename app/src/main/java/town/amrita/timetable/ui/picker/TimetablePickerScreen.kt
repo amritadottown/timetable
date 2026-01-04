@@ -310,7 +310,7 @@ fun TimetablePickerScreen(
             ((state as? TimetablePickerScreenState.Ready)
               ?.timetable as? TimetableState.Selected)
               ?.spec
-              ?.let { context.updateTimetableFromRegistry(it) }
+              ?.let { context.updateTimetableFromRegistry(it, emptyMap(), useCurrentConfig = false) }
           }
         )
       }

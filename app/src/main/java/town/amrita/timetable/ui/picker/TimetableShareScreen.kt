@@ -93,7 +93,7 @@ fun TimetableShareScreen(uri: Uri?, goToConfig: (Timetable, Uri) -> Unit = { _, 
               modifier = Modifier.fillMaxWidth(),
               enabled = validationResult.isEmpty(),
               onApplyTimetable = {
-                context.updateTimetableFromUri(uri)
+                context.updateTimetableFromUri(uri, emptyMap())
               }
             )
           }

@@ -149,7 +149,7 @@ fun RootScreen(startRoute: Route = Route.RegistryRoute) {
               onConfigSelected = { config ->
                 withContext(Dispatchers.IO) {
                   if (route.spec != null) {
-                    context.updateTimetableFromRegistry(route.spec, config)
+                    context.updateTimetableFromRegistry(route.spec, config, useCurrentConfig = false)
                   } else if (route.uri != null) {
                     context.updateTimetableFromUri(route.uri, config)
                   }

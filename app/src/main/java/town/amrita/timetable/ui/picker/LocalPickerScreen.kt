@@ -165,7 +165,7 @@ fun LocalPickerScreen(
             val selectedState = state as? LocalPickerScreenState.Selected
 
             if (selectedState != null) {
-              context.updateTimetableFromUri(selectedState.uri)
+              context.updateTimetableFromUri(selectedState.uri, emptyMap())
             }
           }
         )
