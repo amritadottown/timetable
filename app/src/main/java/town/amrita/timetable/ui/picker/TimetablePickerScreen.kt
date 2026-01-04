@@ -60,6 +60,7 @@ import town.amrita.timetable.ui.components.LocalSnackbarState
 import town.amrita.timetable.ui.components.TimetablePreview
 import town.amrita.timetable.ui.components.TimetableScaffold
 import town.amrita.timetable.ui.components.TooltipContainer
+import town.amrita.timetable.utils.TODAY
 import town.amrita.timetable.utils.updateTimetableFromRegistry
 
 @OptIn(ExperimentalSerializationApi::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -168,7 +169,7 @@ fun TimetablePickerScreen(
       )
     }
 
-    Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(24.dp)) {
+    Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
       when (state) {
         TimetablePickerScreenState.IndexLoading ->
           Column(
@@ -194,19 +195,23 @@ fun TimetablePickerScreen(
 
         is TimetablePickerScreenState.Ready ->
           with(state) {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
               DropdownPicker(
                 options = years.toList(),
                 selected = currentYear,
                 label = "Start Year",
                 onSelectionChanged = viewModel::yearChanged
               )
+              if(sections.isEmpty())
+                return@Column
               DropdownPicker(
                 options = sections.toList(),
                 selected = currentSection,
                 label = "Section",
                 onSelectionChanged = viewModel::sectionChanged
               )
+              if(semesters.isEmpty())
+                return@Column
               DropdownPicker(
                 options = semesters.toList(),
                 selected = currentSemester,
@@ -219,6 +224,8 @@ fun TimetablePickerScreen(
 
       if (state is TimetablePickerScreenState.Ready) {
         with(state.timetable) {
+          var selectedDay by remember { mutableStateOf(TODAY) }
+
           when (this) {
             TimetableState.NotSelected ->
               Spacer(
@@ -268,7 +275,9 @@ fun TimetablePickerScreen(
                 Modifier
                   .weight(1f)
                   .fillMaxSize(),
-                timetable = timetable
+                timetable = timetable,
+                day = selectedDay,
+                dayChanged = { newDay -> selectedDay = newDay }
               )
           }
         }
@@ -372,7 +381,12 @@ class RegistryScreenViewModel : ViewModel() {
   }
 
   fun yearChanged(newValue: String?) {
-    updateIfReady { fixRegistryState(it.copy(currentYear = newValue)) }
+    updateIfReady { fixRegistryState(it.copy(currentYear = newValue), setCurrentSemester = true) }
+    tryLoadTimetable()
+  }
+
+  fun sectionChanged(newValue: String?) {
+    updateIfReady { fixRegistryState(it.copy(currentSection = newValue), setCurrentSemester = true) }
     tryLoadTimetable()
   }
 
@@ -381,12 +395,7 @@ class RegistryScreenViewModel : ViewModel() {
     tryLoadTimetable()
   }
 
-  fun sectionChanged(newValue: String?) {
-    updateIfReady { fixRegistryState(it.copy(currentSection = newValue)) }
-    tryLoadTimetable()
-  }
-
-  fun fixRegistryState(s: TimetablePickerScreenState.Ready): TimetablePickerScreenState.Ready {
+  fun fixRegistryState(s: TimetablePickerScreenState.Ready, setCurrentSemester: Boolean = false): TimetablePickerScreenState.Ready {
     val newSections = registryYears[s.currentYear] ?: emptyMap()
     val newSection = when (s.currentSection) {
       in newSections -> s.currentSection
@@ -396,7 +405,7 @@ class RegistryScreenViewModel : ViewModel() {
     val newSemesters = newSections[newSection]?.toSet() ?: setOf()
     val newSemester = when {
       s.currentSemester in newSemesters -> s.currentSemester
-      !newSemesters.isEmpty() -> newSemesters.last()
+      setCurrentSemester && !newSemesters.isEmpty() -> newSemesters.last()
       else -> null
     }
 

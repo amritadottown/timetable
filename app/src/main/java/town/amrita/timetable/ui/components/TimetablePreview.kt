@@ -28,7 +28,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,6 +53,7 @@ import town.amrita.timetable.ui.LocalTimetableColors
 import town.amrita.timetable.utils.DAYS
 import town.amrita.timetable.utils.TODAY
 import town.amrita.timetable.utils.longName
+import java.time.DayOfWeek
 
 val StaggeredPageSize =
   object : PageSize {
@@ -58,7 +61,7 @@ val StaggeredPageSize =
       availableSpace: Int,
       pageSpacing: Int,
     ): Int {
-      return availableSpace - pageSpacing * 5
+      return availableSpace - pageSpacing * 4
     }
   }
 
@@ -67,6 +70,8 @@ val StaggeredPageSize =
 fun TimetablePreview(
   modifier: Modifier = Modifier,
   timetable: Timetable?,
+  day: DayOfWeek? = TODAY,
+  dayChanged: (DayOfWeek) -> Unit = {},
   config: Map<String, String>? = null,
 ) {
   val context = LocalContext.current
@@ -74,9 +79,15 @@ fun TimetablePreview(
 
   Box(modifier) {
     if (timetable != null) {
-      val initialPage = if (timetable.schedule.keys.contains(TODAY)) DAYS.indexOf(TODAY) else 0
+      val initialPage = if (timetable.schedule.keys.contains(day)) DAYS.indexOf(day) else 0
       val pagerState =
         rememberPagerState(initialPage = initialPage) { timetable.schedule.keys.size }
+
+      LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }.collect { page ->
+          dayChanged(DAYS[page])
+        }
+      }
 
       Column(Modifier.matchParentSize(), horizontalAlignment = Alignment.CenterHorizontally) {
         HorizontalPager(

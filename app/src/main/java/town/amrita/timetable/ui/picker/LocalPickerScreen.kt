@@ -15,7 +15,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -33,6 +37,7 @@ import town.amrita.timetable.models.Timetable
 import town.amrita.timetable.models.validate
 import town.amrita.timetable.ui.components.TimetablePreview
 import town.amrita.timetable.ui.components.TimetableScaffold
+import town.amrita.timetable.utils.TODAY
 import town.amrita.timetable.utils.getDisplayName
 import town.amrita.timetable.utils.getFileContent
 import town.amrita.timetable.utils.updateTimetableFromUri
@@ -65,7 +70,7 @@ fun LocalPickerScreen(
     }
 
   TimetableScaffold(title = "Select File") {
-    Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(24.dp)) {
+    Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
       Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -88,6 +93,8 @@ fun LocalPickerScreen(
 
         is LocalPickerScreenState.Selected ->
           with(state.timetable) {
+            var selectedDay by remember { mutableStateOf(TODAY) }
+
             when (this) {
               is LocalTimetableState.ReadError ->
                 Column(
@@ -121,7 +128,9 @@ fun LocalPickerScreen(
                   Modifier
                     .weight(1f)
                     .fillMaxSize(), 
-                  timetable = timetable
+                  timetable = timetable,
+                  day = selectedDay,
+                  dayChanged = { newDay -> selectedDay = newDay }
                 )
             }
           }
