@@ -43,7 +43,7 @@ fun ConfigPickerScreen(
           DropdownPicker(
             options = option.values.map { it.id },
             displayOptions = option.values.map { it.label },
-            selected = option.values.first { x -> x.id == selectedConfig[key] }.label,
+            selected = selectedConfig[key],
             label = option.label,
             allowNull = false,
             onSelectionChanged = { newValue ->
