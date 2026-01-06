@@ -15,8 +15,8 @@ android {
     applicationId = "town.amrita.timetable"
     minSdk = 29
     targetSdk = 36
-    versionCode = 10
-    versionName = "1.0.8"
+    versionCode = 12
+    versionName = "1.1.1"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

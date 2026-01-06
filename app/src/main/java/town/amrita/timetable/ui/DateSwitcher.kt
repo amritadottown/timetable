@@ -35,9 +35,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import town.amrita.timetable.R
 import town.amrita.timetable.activity.MainActivity
+import town.amrita.timetable.models.DEFAULT_CONFIG
 import town.amrita.timetable.models.updateDay
 import town.amrita.timetable.models.updateLock
 import town.amrita.timetable.models.widgetConfig
+import town.amrita.timetable.registry.TimetableSpec
 import town.amrita.timetable.utils.DAYS
 import town.amrita.timetable.utils.TODAY
 import town.amrita.timetable.utils.longName
@@ -49,14 +51,11 @@ fun DateSwitcher() {
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
 
-  val data = context.widgetConfig.data
-  val isLockedFlow = data.map { prefs ->
-    val e = prefs.lockedUntil
-    if (e != null)
-      Instant.ofEpochSecond(e).isAfter(Instant.now())
-    else false
-  }
-  val isLocked by isLockedFlow.collectAsState(false)
+  val config by context.widgetConfig.data.collectAsState(DEFAULT_CONFIG)
+
+  val isLocked =
+    config.lockedUntil?.let { Instant.ofEpochSecond(it).isAfter(Instant.now()) }
+      ?: false
 
   TimetableTheme {
     ModalBottomSheet(
@@ -71,7 +70,17 @@ fun DateSwitcher() {
           horizontalArrangement = Arrangement.SpaceBetween,
           verticalAlignment = Alignment.CenterVertically
         ) {
-          Text(style = MaterialTheme.typography.titleLarge, text = "Day")
+          Text(
+            style = MaterialTheme.typography.titleMedium,
+            text =
+              if (config.isLocal) "Local: ${config.file}"
+              else {
+                config.file?.let {
+                  val spec = TimetableSpec.fromString(it)
+                  "${spec.year}, ${spec.section}, ${spec.semester}"
+                } ?: "⚠️ Unknown"
+              }
+          )
           Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically

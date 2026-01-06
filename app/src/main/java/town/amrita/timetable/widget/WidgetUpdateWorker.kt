@@ -68,11 +68,15 @@ class WidgetUpdateWorker(context: Context, workParams: WorkerParameters) :
         val newTimetable = RegistryService.instance.getTimetable(spec).await()
 
         val currentChoices = config.electiveChoices
-        val isIncompatible = currentChoices.any { (optionName, selectedValue) ->
-          val configOption = newTimetable.config[optionName]
-          // choice is incompatible if the option no longer exists or the selected value is no longer valid
-          configOption == null || configOption.values.none { it.id == selectedValue }
-        }
+        val isIncompatible =
+          if (currentChoices.isEmpty())
+            !newTimetable.config.isEmpty()
+          else
+            currentChoices.any { (optionName, selectedValue) ->
+              val configOption = newTimetable.config[optionName]
+              // choice is incompatible if the option no longer exists or the selected value is no longer valid
+              configOption == null || configOption.values.none { it.id == selectedValue }
+            }
 
         if (isIncompatible) {
           applicationContext.widgetConfig.updateData {

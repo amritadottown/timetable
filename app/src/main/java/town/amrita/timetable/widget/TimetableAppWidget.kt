@@ -212,15 +212,19 @@ fun TitleBar(day: DayOfWeek, locked: Boolean, current: String? = null, next: Str
 
   val isBeeg = LocalSize.current.width >= BEEG.width
 
-  Column {
+  Row(
+    verticalAlignment = Alignment.CenterVertically,
+    modifier = GlanceModifier
+      .fillMaxWidth()
+      .height(48.dp)
+  ) {
     Row(
       verticalAlignment = Alignment.CenterVertically,
       modifier = GlanceModifier
-        .fillMaxWidth()
+        .defaultWeight()
         .height(48.dp)
         .padding(start = 16.dp)
-        .clickable(actionStartActivity<DateSwitcherActivity>())
-    ) {
+        .clickable(actionStartActivity<DateSwitcherActivity>())) {
       Box(
         contentAlignment = Alignment.Center,
         modifier = GlanceModifier
@@ -265,19 +269,27 @@ fun TitleBar(day: DayOfWeek, locked: Boolean, current: String? = null, next: Str
 
 
       Spacer(GlanceModifier.defaultWeight())
-      Box(
-        contentAlignment = Alignment.Center,
-        modifier = GlanceModifier
-          .size(48.dp)
-          .clickable(actionSendBroadcast<AlarmReceiver>())
-      ) {
-        Image(
-          modifier = GlanceModifier.size(24.dp),
-          provider = ImageProvider(R.drawable.refresh_24px),
-          contentDescription = "Refresh",
-          colorFilter = ColorFilter.tint(GlanceTheme.colors.onSurface)
-        )
-      }
+
+      Image(
+        modifier = GlanceModifier.size(24.dp),
+        provider = ImageProvider(R.drawable.more_vert_24px),
+        contentDescription = "Menu",
+        colorFilter = ColorFilter.tint(GlanceTheme.colors.onSurface)
+      )
+    }
+
+    Box(
+      contentAlignment = Alignment.Center,
+      modifier = GlanceModifier
+        .size(48.dp)
+        .clickable(actionSendBroadcast<AlarmReceiver>())
+    ) {
+      Image(
+        modifier = GlanceModifier.size(24.dp),
+        provider = ImageProvider(R.drawable.refresh_24px),
+        contentDescription = "Refresh",
+        colorFilter = ColorFilter.tint(GlanceTheme.colors.onSurface)
+      )
     }
   }
 }

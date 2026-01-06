@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <color name="icon_background">#b3284e</color>
-    <color name="icon_foreground">#ffffff</color>
+    <color name="icon_background">#ffffff</color>
+    <color name="icon_foreground">#b3284e</color>
 
     <style name="Theme.Timetable" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@android:color/system_surface_container_light</item>

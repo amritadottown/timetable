@@ -36,6 +36,8 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import kotlinx.coroutines.launch
 import town.amrita.timetable.BuildConfig
 import town.amrita.timetable.models.DEFAULT_CONFIG
@@ -45,6 +47,7 @@ import town.amrita.timetable.models.updateShowNextDayAt
 import town.amrita.timetable.models.widgetConfig
 import town.amrita.timetable.ui.components.TimetableScaffold
 import town.amrita.timetable.widget.AlarmReceiver
+import town.amrita.timetable.widget.WidgetUpdateWorker
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -180,7 +183,7 @@ fun SettingsScreen() {
         if (BuildConfig.DEBUG) {
           val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-          Column {
+          Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(onClick = {
               val intent = Intent(context, AlarmReceiver::class.java)
               val pendingIntent = PendingIntent.getBroadcast(
@@ -196,6 +199,15 @@ fun SettingsScreen() {
               )
             }) {
               Text("Test widget update alarm")
+            }
+
+            Button(onClick = {
+              val work = OneTimeWorkRequestBuilder<WidgetUpdateWorker>()
+                .addTag("REGISTRY_UPDATE")
+                .build()
+              WorkManager.getInstance(context).enqueue(work)
+            }) {
+              Text("Test timetable fetch update work")
             }
           }
 
