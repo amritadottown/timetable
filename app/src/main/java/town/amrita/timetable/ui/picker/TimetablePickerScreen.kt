@@ -139,20 +139,10 @@ fun TimetablePickerScreen(
         confirmButton = {
           TextButton(
             onClick = {
-              scope.launch {
-                try {
-                  showUseCurrentDialog = false
-                  if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-                    val activity = context as ComponentActivity
-                    activity.finish()
-                  }
-                } catch (e: Exception) {
-                  Log.d("Timetable", "Error using existing timetable: $e")
-                  snackbarHostState.showSnackbar(
-                    message = "Error using existing timetable. Please try again.",
-                    withDismissAction = true
-                  )
-                }
+              showUseCurrentDialog = false
+              if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+                val activity = context as ComponentActivity
+                activity.finish()
               }
             }
           ) {
