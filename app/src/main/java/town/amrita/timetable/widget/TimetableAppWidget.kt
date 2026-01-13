@@ -252,7 +252,7 @@ fun TitleBar(day: DayOfWeek, locked: Boolean, current: String? = null, next: Str
         )
       }
 
-      if (isBeeg && (current != null || next != null)) {
+      if (isBeeg && (current != null || next != null) && (day == TODAY)) {
         val currentNextString = when {
           current != null && next != null -> "Now $current, next $next"
           current != null -> "Now $current"
