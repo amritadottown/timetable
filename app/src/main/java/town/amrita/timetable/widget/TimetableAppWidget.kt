@@ -86,9 +86,8 @@ class TimetableAppWidget : GlanceAppWidget() {
         if (it.file == null)
           return@map null
 
-        val timetable = context.openFileInput("${it.file.removeSuffix(".json")}.json").use {
-          Json.decodeFromStream<Timetable>(it)
-        }
+        val timetable: Timetable = context.openFileInput("${it.file.removeSuffix(".json")}.json").use(Json::decodeFromStream)
+
         val dayToShow =
           when (it.day) {
             null -> {
@@ -266,7 +265,6 @@ fun TitleBar(day: DayOfWeek, locked: Boolean, current: String? = null, next: Str
         )
         Text(currentNextString, style = textStyle)
       }
-
 
       Spacer(GlanceModifier.defaultWeight())
 
