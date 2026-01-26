@@ -10,7 +10,9 @@ data class TimetableDisplayEntry(
   val slot: TimetableSlot,
   val start: Int,
   val end: Int,
-  val lab: Boolean
+  val lab: Boolean,
+  val sCode: subject.code,
+  val sFaculty: subject.faculty
 )
 
 data class TimetableSlot(val start: LocalTime, val end: LocalTime) {
@@ -122,7 +124,9 @@ fun buildTimetableDisplay(
           slot,
           i,
           i + offset - 1,
-          isLab
+          isLab,
+          subject.code,
+          subject.faculty
         )
       )
 
