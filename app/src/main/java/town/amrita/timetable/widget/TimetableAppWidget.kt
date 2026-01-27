@@ -315,8 +315,11 @@ fun TimetableItem(item: TimetableDisplayEntry) {
         .padding(horizontal = 14.dp, vertical = 8.dp)
         .appWidgetInnerCornerRadius(12.dp)
         .background(backgroundColor)
-    ) {
-      Column {
+  )
+     {
+      Column (
+        modifier=GlanceModifier.clickable(onClick = { showDialog = !showDialog })
+      ) {
         Row(verticalAlignment = Alignment.Vertical.CenterVertically) {
           Text(if (isBeeg) name else shortName, style = strongTextStyle)
           Spacer(GlanceModifier.padding(start = 4.dp))
