@@ -352,7 +352,7 @@ fun TimetableItem(item: TimetableDisplayEntry) {
     }
   }
   
-    if (showDialog) {
+  if (showDialog) {
     AlertDialog(
       onDismissRequest = { showDialog = false },
       title = { Text("Dialog Title") },
