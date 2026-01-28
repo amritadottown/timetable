@@ -350,21 +350,21 @@ fun TimetableItem(item: TimetableDisplayEntry) {
         }
       }
     }
+
+    if (showDialog) {
+      AlertDialog(
+        onDismissRequest = { showDialog = false },
+        title = { Text("Dialog Title") },
+        text = { Text("Course Faculty: $sFaculty\nCourse Code: $sCode") },
+        confirmButton = {
+          Button(onClick = { showDialog = false }) {
+            Text("Ok")
+          }
+        }
+      )
+    }
   }
   
-  if (showDialog) {
-    AlertDialog(
-      onDismissRequest = { showDialog = false },
-      title = { Text("Dialog Title") },
-      text = { Text("Course Faculty: $sFaculty\nCourse Code: $sCode") },
-      confirmButton = {
-        Button(onClick = { showDialog = false }) {
-          Text("Ok")
-        }
-      }
-    )
-  }
-
 }
 
 @SuppressLint("LocalContextResourcesRead")
