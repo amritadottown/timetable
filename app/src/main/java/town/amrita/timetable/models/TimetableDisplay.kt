@@ -11,8 +11,8 @@ data class TimetableDisplayEntry(
   val start: Int,
   val end: Int,
   val lab: Boolean,
-  val sCode: subject.code,
-  val sFaculty: subject.faculty
+  val sCode: String,
+  val sFaculty: String
 )
 
 data class TimetableSlot(val start: LocalTime, val end: LocalTime) {
