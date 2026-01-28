@@ -166,6 +166,8 @@ fun TimetableWidget(
   entries: List<TimetableDisplayEntry>,
   current: String? = null,
   next: String? = null,
+  sFaculty: String? = null,
+  sCode: String? = null,
 ) {
   val textStyle = TextStyle(color = GlanceTheme.colors.onSurface)
 
@@ -296,12 +298,13 @@ fun TitleBar(day: DayOfWeek, locked: Boolean, current: String? = null, next: Str
 fun TimetableItem(item: TimetableDisplayEntry) {
 
   val isBeeg = LocalSize.current.width >= BEEG.width
-
+  
+  var showDialog by remember { mutableStateOf(false) }
   with(item) {
     val isActive = item.slot.containsTime(LocalTime.now())
 
     val backgroundColor =
-      if (isActive) GlanceTheme.colors.primary else GlanceTheme.colors.widgetBackground
+    if (isActive) GlanceTheme.colors.primary else GlanceTheme.colors.widgetBackground
     val textColor = if (isActive) GlanceTheme.colors.onPrimary else GlanceTheme.colors.onSurface
     val textStyle = TextStyle(color = textColor)
     val strongTextStyle =
@@ -348,6 +351,20 @@ fun TimetableItem(item: TimetableDisplayEntry) {
       }
     }
   }
+  
+    if (showDialog) {
+    AlertDialog(
+      onDismissRequest = { showDialog = false },
+      title = { Text("Dialog Title") },
+      text = { Text("Course Faculty: $sFaculty\nCourse Code: $sCode") },
+      confirmButton = {
+        Button(onClick = { showDialog = false }) {
+          Text("Ok")
+        }
+      }
+    )
+  }
+
 }
 
 @SuppressLint("LocalContextResourcesRead")
