@@ -11,8 +11,8 @@ data class TimetableDisplayEntry(
   val start: Int,
   val end: Int,
   val lab: Boolean,
-  val sCode: String,
-  val sFaculty: String
+  val sFaculty: String,
+  val sCode: String
 )
 
 data class TimetableSlot(val start: LocalTime, val end: LocalTime) {
@@ -114,6 +114,7 @@ fun buildTimetableDisplay(
         5 -> LAB_SLOTS[2]
         else -> throw IllegalStateException()
       }
+      
     else SLOTS[i]
 
     if (showFreePeriods || subject != Subject.FREE)
@@ -125,8 +126,8 @@ fun buildTimetableDisplay(
           i,
           i + offset - 1,
           isLab,
-          subject.code,
-          subject.faculty
+          subject.faculty,
+          subject.code
         )
       )
 
